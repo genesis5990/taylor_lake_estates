@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taylor Lake Estates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a lake survey sheet. Depth-chart hero, a status strip read like a gauge board, then five plain working sections. */
+:root{
+  --paper:#eef2ef; --surface:#fbfcfb; --ink:#14292b; --muted:#56696a; --line:#cbd7d3;
+  --water:#1d6a75; --shallow:#cfe5e4; --deep:#0f4a58; --buoy:#c2501a;
+  --ok:#2c7a4c; --warn:#a36f0c; --crit:#b3372b;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0d191b; --surface:#14262a; --ink:#e3eeec; --muted:#94a9a9; --line:#283c40;
+    --water:#63b7c3; --shallow:#2a6470; --deep:#0a2c36; --buoy:#f08a4b;
+    --ok:#5fc089; --warn:#e0b04a; --crit:#f0796c; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0d191b; --surface:#14262a; --ink:#e3eeec; --muted:#94a9a9; --line:#283c40;
+  --water:#63b7c3; --shallow:#2a6470; --deep:#0a2c36; --buoy:#f08a4b;
+  --ok:#5fc089; --warn:#e0b04a; --crit:#f0796c; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
+h1{font-size:clamp(2.6rem,7vw,5rem);font-weight:800;letter-spacing:-.03em}
+h2{font-size:clamp(1.8rem,4vw,2.7rem);font-weight:800;letter-spacing:-.02em}
+h3{font-size:1.2rem;font-weight:700;line-height:1.2}
+p{margin:0;max-width:65ch}
+a{color:var(--water)}
+:focus-visible{outline:3px solid var(--buoy);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+
+/* nav */
+.top{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;gap:8px 22px;align-items:center;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.brand{font-family:var(--display);font-weight:800;font-size:1.05rem;color:var(--ink);text-decoration:none;margin-right:auto}
+.top nav{display:flex;gap:4px 18px;flex-wrap:wrap}
+.top nav a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.93rem;padding:2px 0;border-bottom:2px solid transparent}
+.top nav a:hover{border-bottom-color:var(--buoy)}
+
+/* hero */
+.hero{padding:44px 0 28px}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:36px;align-items:center}
+.hero p.lede{font-size:1.15rem;margin-top:18px;max-width:46ch}
+.kicker{font-weight:700;color:var(--water);letter-spacing:.08em;text-transform:uppercase;font-size:.8rem;margin-bottom:12px}
+.chartbox{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px}
+#chart{display:block;width:100%;height:500px}
+.chartbox figcaption{font-size:.8rem;color:var(--muted);padding:6px 4px 0}
+figure{margin:0}
+
+/* status strip */
+.status{background:var(--deep);color:#eef6f5}
+:root[data-theme="dark"] .status{background:#0a2c36}
+.status .wrap{padding-top:22px;padding-bottom:22px;display:grid;gap:18px}
+.status-head{display:flex;gap:12px 16px;align-items:center;flex-wrap:wrap}
+.status-head h2{font-size:1.3rem;letter-spacing:0;margin-right:auto}
+.pill{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.85rem;padding:4px 12px;border-radius:999px;border:1.5px solid currentColor;white-space:nowrap}
+.pill::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor}
+.status .pill.ok{color:#8fe0b0}.status .pill.warn{color:#f3cf7a}.status .pill.crit{color:#ffa094}
+.gauges{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.18)}
+.gauge{background:var(--deep);padding:12px 14px}
+:root[data-theme="dark"] .gauge{background:#0a2c36}
+.gauge dt{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75}
+.gauge dd{margin:4px 0 0;font-family:var(--display);font-weight:700;font-size:1.35rem;line-height:1.15;overflow-wrap:anywhere}
+dl{margin:0}
+.notice{border-left:4px solid var(--buoy);padding:2px 0 2px 14px;max-width:75ch;white-space:pre-wrap}
+.status .notice{border-left-color:#f08a4b}
+.status a,.status .muted{color:#b9d6d6}
+.upcoming{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.upcoming li::before{content:"";display:inline-block;width:8px;height:8px;background:#f08a4b;margin-right:10px;transform:rotate(45deg)}
+
+/* sections */
+section.block{padding:64px 0;border-top:1px solid var(--line)}
+.block>.wrap{display:grid;gap:28px}
+.sec-head{display:grid;gap:10px}
+.draft{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--warn);border:1.5px dashed var(--warn);padding:2px 8px;border-radius:4px;vertical-align:middle}
+.specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border-top:3px solid var(--ink)}
+.specs div{padding:14px 18px 14px 0;border-bottom:1px solid var(--line)}
+.specs dt{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.specs dd{margin:2px 0 0;font-family:var(--display);font-weight:800;font-size:2rem;line-height:1.1}
+.specs dd small{font-family:var(--body);font-weight:500;font-size:.9rem;color:var(--muted);display:block}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px 40px}
+.practice{padding:14px 0;border-bottom:1px solid var(--line)}
+.practice h3{margin-bottom:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:grid;gap:8px;align-content:start}
+.card .sci{font-style:italic;color:var(--muted);font-size:.88rem;margin-top:-4px}
+.card p{font-size:.95rem}
+.tag{justify-self:start;font-size:.75rem;font-weight:700;padding:2px 9px;border-radius:999px;border:1.5px solid currentColor}
+.tag.ok{color:var(--ok)}.tag.warn{color:var(--warn)}.tag.crit{color:var(--crit)}
+.fish{border-top:4px solid var(--water)}
+ul.plain{margin:0;padding-left:1.1em;display:grid;gap:8px;max-width:70ch}
+.callout{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--buoy);border-radius:4px;padding:14px 18px}
+
+/* forms and tables */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px;display:grid;gap:16px}
+form.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.field{display:grid;gap:5px;align-content:start}
+.field.wide{grid-column:1/-1}
+label{font-weight:600;font-size:.9rem}
+input,select,textarea,button{font:inherit;color:inherit}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;background:var(--paper);border:1.5px solid var(--line);border-radius:5px;padding:9px 10px}
+textarea{min-height:90px;resize:vertical}
+.check{display:flex;gap:8px;align-items:center;font-weight:600;font-size:.95rem}
+.check input{width:18px;height:18px;accent-color:var(--water)}
+button{cursor:pointer;border-radius:5px;border:1.5px solid var(--ink);background:transparent;padding:8px 16px;font-weight:700}
+button.primary{background:var(--buoy);border-color:var(--buoy);color:#fff}
+:root[data-theme="dark"] button.primary{color:#1a0e06}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0e06}}
+a.btn{display:inline-block;border-radius:5px;background:var(--buoy);border:1.5px solid var(--buoy);color:#fff;padding:8px 16px;font-weight:700;text-decoration:none}
+:root[data-theme="dark"] a.btn{color:#1a0e06}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) a.btn{color:#1a0e06}}
+button.link{border:0;padding:2px 4px;color:var(--water);text-decoration:underline;font-weight:600;font-size:.88rem}
+button:disabled{opacity:.5;cursor:not-allowed}
+.status button{border-color:#eef6f5;color:#eef6f5}
+.status .panel{color:var(--ink)}
+.status .panel button{border-color:var(--ink);color:var(--ink)}
+.status .panel button.primary{border-color:var(--buoy);color:#fff}
+.row{display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center}
+.msg{font-size:.92rem;font-weight:600}
+.msg.err{color:var(--crit)}.msg.good{color:var(--ok)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{border-top:3px solid var(--water);padding-top:8px}
+.tile b{display:block;font-family:var(--display);font-size:1.8rem;font-weight:800;line-height:1.1}
+.tile span{font-size:.82rem;color:var(--muted)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:.94rem}
+th,td{text-align:left;padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+td.note{max-width:260px;overflow-wrap:anywhere}
+.empty{padding:22px;border:1.5px dashed var(--line);border-radius:6px;color:var(--muted)}
+.report{padding:12px 0;border-bottom:1px solid var(--line);display:grid;gap:4px}
+.report .row{justify-content:space-between}
+.report p{overflow-wrap:anywhere;white-space:pre-wrap}
+footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);font-size:.9rem}
+[hidden]{display:none!important}
+@media (max-width:800px){
+  .hero .wrap{grid-template-columns:1fr}
+  #chart{height:420px}
+  section.block{padding:44px 0}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">Taylor Lake Estates</a>
+    <nav aria-label="Sections">
+      <a href="#lake-status">Lake status</a>
+      <a href="#stewardship">Stewardship</a>
+      <a href="#fishing">Fishing</a>
+      <a href="#wildlife">Wildlife</a>
+      <a href="#rules">Rules</a>
+      <a href="#dues" id="nav-dues" hidden>Dues</a>
+      <a href="#report">Report a problem</a>
+      <a href="#account" id="nav-account">Sign in</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <p class="kicker">Lake association</p>
+      <h1>Four and a half acres we all look after.</h1>
+      <p class="lede">The neighborhood's place to check water conditions, read the stewardship guidelines, log a catch, and tell the lake manager when something needs attention.</p>
+    </div>
+    <figure class="chartbox">
+      <canvas id="chart" role="img" aria-label="Map of the lake traced from satellite imagery: a long arm reaching west along Taylor Lake Drive, a main body running south, and a small cove on the east side. Depth contours every three feet, deepest at about fifteen feet beside the dam on the northeast bank."></canvas>
+      <figcaption>Shoreline traced from satellite imagery and scaled from the 32-foot street width. Depth contours, in feet, are illustrative and not surveyed.</figcaption>
+    </figure>
+  </div>
+</div>
+
+<section class="status" id="lake-status" aria-labelledby="status-h">
+  <div class="wrap">
+    <div class="status-head">
+      <h2 id="status-h">Lake status</h2>
+      <span class="pill ok" id="st-pill" hidden></span>
+      <span class="small muted" id="st-updated">Loading the latest readings…</span>
+      <button type="button" id="st-edit" hidden>Update status</button>
+    </div>
+    <dl class="gauges">
+      <div class="gauge"><dt>Water clarity</dt><dd id="st-clarity">…</dd></div>
+      <div class="gauge"><dt>Surface temperature</dt><dd id="st-temp">…</dd></div>
+      <div class="gauge"><dt>Water level</dt><dd id="st-level">…</dd></div>
+    </dl>
+    <p class="notice" id="st-notice" hidden></p>
+    <div id="st-upcoming-box" hidden>
+      <p class="small muted" style="margin-bottom:6px">Upcoming maintenance</p>
+      <ul class="upcoming" id="st-upcoming"></ul>
+    </div>
+    <form class="panel" id="st-form" hidden>
+      <h3>Update lake status</h3>
+      <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
+        <div class="field"><label for="f-cond">Condition</label>
+          <select id="f-cond"><option value="ok">Open, normal conditions</option><option value="warn">Advisory</option><option value="crit">Closed, stay off the water</option></select></div>
+        <div class="field"><label for="f-clarity">Water clarity</label><input type="text" id="f-clarity" maxlength="40" placeholder="e.g. 3.5 ft Secchi"></div>
+        <div class="field"><label for="f-temp">Surface temperature</label><input type="text" id="f-temp" maxlength="40" placeholder="e.g. 48 °F"></div>
+        <div class="field"><label for="f-level">Water level</label><input type="text" id="f-level" maxlength="40" placeholder="e.g. Normal pool"></div>
+        <div class="field wide"><label for="f-notice">Notice to residents</label><textarea id="f-notice" maxlength="600"></textarea></div>
+        <div class="field wide"><label for="f-upcoming">Upcoming maintenance, one item per line</label><textarea id="f-upcoming" maxlength="800" placeholder="Dec 3: Dam inspection"></textarea></div>
+      </div>
+      <div class="row"><button class="primary" type="submit" id="st-save">Publish status</button><button type="button" id="st-cancel">Cancel</button><span class="msg" id="st-msg" role="status"></span></div>
+    </form>
+  </div>
+</section>
+
+<section class="block" id="stewardship" aria-labelledby="stew-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="stew-h">The lake, and how to keep it healthy</h2>
+      <p>Everything that lands on a lawn or a driveway around here ends up in the same basin. A small lake has little water to dilute it, so what each household does shows up in the water within a season.</p>
+    </div>
+    <dl class="specs">
+      <div><dt>Surface area</dt><dd class="num">~4.6 acres<small>about 200,000 square feet, measured from satellite imagery</small></dd></div>
+      <div><dt>Shoreline</dt><dd class="num">~0.8 mile<small>about 4,250 feet around</small></dd></div>
+      <div><dt>Maximum depth</dt><dd class="num">~15 ft<small>near the dam</small></dd></div>
+      <div><dt>Resident fish</dt><dd class="num">5 groups<small>bass, catfish, carp, sunfish, crappie</small></dd></div>
+    </dl>
+    <div class="two">
+      <div class="practice"><h3>Go easy on lawn fertilizer</h3><p>Phosphorus that washes off a lawn feeds algae. Use a phosphorus-free product, apply less than the bag says, and skip it when rain is forecast.</p></div>
+      <div class="practice"><h3>Keep clippings and leaves out of the water</h3><p>Grass and leaves rot on the bottom, release nutrients, and use up oxygen fish need. Mulch them on the lawn or bag them, and blow away from the shore.</p></div>
+      <div class="practice"><h3>Respect shoreline erosion zones</h3><p>Stay off bare or slumping banks and keep mowers back from the edge. A strip of taller native plants along the water holds soil better than turf.</p></div>
+      <div class="practice"><h3>Pick up after pets</h3><p>Pet waste carries bacteria and nutrients straight to the lake with the next rain.</p></div>
+      <div class="practice"><h3>Nothing down the storm drains</h3><p>Street drains empty into the lake untreated. That includes soapy water from car washing, paint rinse, and pool water.</p></div>
+      <div class="practice"><h3>Never release anything into the lake</h3><p>Bait buckets, aquarium fish, and pond plants can bring in species that are close to impossible to remove.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="fishing" aria-labelledby="fish-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="fish-h">Fishing guide and catch log</h2>
+      <p>Five kinds of fish live here. Logging what you catch tells us how the population is doing, which is how fair size limits get set.</p>
+    </div>
+    <div class="cards">
+      <article class="card fish"><h3>Bass</h3><p class="sci">Largemouth, <span lang="la">Micropterus salmoides</span></p><p>The top predator. Look along weed edges, fallen timber, and docks early and late in the day.</p></article>
+      <article class="card fish"><h3>Catfish</h3><p class="sci">Channel catfish, <span lang="la">Ictalurus punctatus</span></p><p>Bottom feeders that bite best at dusk and after dark, often in the deeper water toward the dam.</p></article>
+      <article class="card fish"><h3>Carp</h3><p class="sci">Common carp, <span lang="la">Cyprinus carpio</span></p><p>Big, strong, and wary. They root in the shallows and stir up sediment, which clouds the water.</p></article>
+      <article class="card fish"><h3>Sunfish</h3><p class="sci">Bluegill and relatives, <span lang="la">Lepomis</span></p><p>Plentiful near shore and the best first fish for kids. A small hook and a bit of worm is all it takes.</p></article>
+      <article class="card fish"><h3>Crappie</h3><p class="sci"><span lang="la">Pomoxis</span></p><p>School around submerged brush. Spring is the easiest time to find them shallow.</p></article>
+    </div>
+
+    <div class="sec-head">
+      <h3>Catch-and-release guidelines <span class="draft">Draft for board review</span></h3>
+      <ul class="plain">
+        <li><strong>Release all bass for now.</strong> Large bass keep sunfish numbers in check. A slot limit will be set once the catch log shows what sizes are out there.</li>
+        <li>Wet your hands before handling a fish, support its belly, and get it back in the water quickly. Measure and photograph first, then release.</li>
+        <li>Pinch down barbs when you plan to release. Cut the line on a deeply hooked fish; do not pull the hook.</li>
+        <li>Keeping a few sunfish or catfish for the table is fine. Take only what you will eat.</li>
+        <li>Pack out all line, hooks, and bait containers. Loose line tangles turtles and birds.</li>
+        <li>Never empty a bait bucket into the lake.</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <div class="row" style="justify-content:space-between"><h3>Community catch log</h3>
+        <div class="row"><label for="log-filter" class="small">Show</label>
+          <select id="log-filter" style="width:auto"><option value="">All species</option><option>Bass</option><option>Catfish</option><option>Carp</option><option>Sunfish</option><option>Crappie</option></select></div>
+      </div>
+      <div class="tiles">
+        <div class="tile"><b class="num" id="t-count">–</b><span>catches logged</span></div>
+        <div class="tile"><b class="num" id="t-bass">–</b><span>longest bass</span></div>
+        <div class="tile"><b class="num" id="t-rel">–</b><span>released</span></div>
+      </div>
+      <div id="log-list"><p class="empty">Sign in to see the neighborhood catch log.</p></div>
+
+      <form class="grid" id="catch-form" hidden>
+        <h3 class="field wide">Log a catch</h3>
+        <div class="field"><label for="c-species">Species</label>
+          <select id="c-species" required><option>Bass</option><option>Catfish</option><option>Carp</option><option>Sunfish</option><option>Crappie</option></select></div>
+        <div class="field"><label for="c-length">Length (inches)</label><input type="number" id="c-length" min="1" max="60" step="0.25" required></div>
+        <div class="field"><label for="c-weight">Weight (lb), optional</label><input type="number" id="c-weight" min="0" max="80" step="0.1"></div>
+        <div class="field"><label for="c-date">Date caught</label><input type="date" id="c-date" required></div>
+        <div class="field wide"><label for="c-note">Where and how, optional</label><input type="text" id="c-note" maxlength="140" placeholder="North cove, plastic worm"></div>
+        <div class="field wide row"><label class="check" for="c-released"><input type="checkbox" id="c-released" checked> Released</label>
+          <button class="primary" type="submit" id="c-save">Add to the log</button><span class="msg" id="c-msg" role="status"></span></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="wildlife" aria-labelledby="wild-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="wild-h">Who else lives here</h2>
+      <p>A field guide to the animals you are likely to meet along the shoreline, and what to do when you meet them.</p>
+    </div>
+    <p class="callout"><strong>Two rules cover almost everything:</strong> do not feed the geese or any other wildlife, and watch from a distance. Keep dogs leashed near the water, especially in spring when birds are nesting.</p>
+    <div class="cards">
+      <article class="card"><h3>Red-eared slider</h3><p class="sci" lang="la">Trachemys scripta elegans</p><p>The turtles lined up on logs on sunny days. They slide off when approached. Females cross lawns in late spring to nest; let them pass.</p><span class="tag ok">Harmless</span></article>
+      <article class="card"><h3>Canada goose</h3><p class="sci" lang="la">Branta canadensis</p><p>Resident year-round. Feeding them brings larger flocks, and their droppings load the lake with nutrients. Nesting pairs will charge to defend a nest.</p><span class="tag warn">Do not feed</span></article>
+      <article class="card"><h3>Ducks</h3><p class="sci">Mallards and wood ducks</p><p>Dabble in the shallows and nest in cover near shore. Bread harms them and fouls the water.</p><span class="tag warn">Do not feed</span></article>
+      <article class="card"><h3>Red fox</h3><p class="sci" lang="la">Vulpes vulpes</p><p>Seen at dawn and dusk hunting mice and rabbits. Shy around people. Bring small pets in at night and keep pet food indoors.</p><span class="tag ok">Keeps its distance</span></article>
+      <article class="card"><h3>Raccoon</h3><p class="sci" lang="la">Procyon lotor</p><p>Works the shoreline at night for crawfish and mussels. Secure trash lids. One that is out in daylight and acting unwell should be left alone and reported.</p><span class="tag warn">Do not approach</span></article>
+      <article class="card"><h3>Muskrat</h3><p class="sci" lang="la">Ondatra zibethicus</p><p>A small swimmer with a thin tail, often mistaken for a beaver. It burrows into banks, and burrows in the dam can weaken it.</p><span class="tag crit">Report burrows near the dam</span></article>
+      <article class="card"><h3>Crawfish</h3><p class="sci">Family <span lang="la">Cambaridae</span></p><p>Under rocks in the shallows, and the builders of the small mud chimneys you see on wet ground near shore. Food for bass, raccoons, and herons.</p><span class="tag ok">Harmless</span></article>
+      <article class="card"><h3>Native snakes</h3><p class="sci">Watersnakes and garter snakes</p><p>Most snakes near the water are non-venomous and eat fish, frogs, and rodents. Any snake may bite if grabbed. Step back and it will leave.</p><span class="tag warn">Leave it alone</span></article>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="rules" aria-labelledby="rules-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="rules-h">Rules and safety <span class="draft">Draft for board review</span></h2>
+      <p>These are proposed starting points. The association's recorded covenants govern wherever they differ.</p>
+    </div>
+    <div class="two">
+      <div class="practice"><h3>Shoreline access</h3><ul class="plain">
+        <li>The lake is for residents and their accompanied guests.</li>
+        <li>Reach the water from your own lot or a common access point. Do not cross a neighbor's yard without permission.</li>
+        <li>Stay off the dam face and away from the spillway.</li>
+        <li>Leave shoreline plants and rock in place; they are holding the bank.</li>
+      </ul></div>
+      <div class="practice"><h3>Boats and paddle craft</h3><ul class="plain">
+        <li>Non-motorized craft only: kayaks, canoes, paddleboards, and rowboats.</li>
+        <li>One life jacket per person on board. Children wear theirs.</li>
+        <li>Clean, drain, and dry any boat that has been on other water before it goes in here.</li>
+        <li>Store boats above the bank, not on it.</li>
+      </ul></div>
+      <div class="practice"><h3>On and near the water</h3><ul class="plain">
+        <li>There is no lifeguard. Children need an adult within reach.</li>
+        <li>Ice here is never checked and never guaranteed safe.</li>
+        <li>Get off the water at the first thunder.</li>
+        <li>Stay out of water that is green, scummy, or smells bad, and keep pets out too. Then report it below.</li>
+      </ul></div>
+      <div class="practice"><h3>In an emergency</h3><p>Call 911 first for anyone in danger, or for water going over or through the dam. Use the form below afterward so the lake manager has a record.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="dues" aria-labelledby="dues-h" hidden>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="dues-h">Lakefront dues</h2>
+      <p>Owners of lakefront property pay annual dues to the association. Dues are paid once a year. Tell us which property you are paying for, then pay by credit or debit card.</p>
+      <p id="d-note" hidden></p>
+    </div>
+    <dl class="specs">
+      <div><dt>Annual dues</dt><dd class="num" id="d-amount">…</dd></div>
+      <div><dt>Due</dt><dd class="num" id="d-due">…</dd></div>
+      <div><dt>Pay with</dt><dd>Card<small>credit or debit, processed by Stripe</small></dd></div>
+    </dl>
+    <div class="panel" id="dues-pay">
+      <form class="grid" id="dues-form">
+        <h3 class="field wide">Pay your dues</h3>
+        <div class="field"><label for="d-addr">Lakefront property address</label><input type="text" id="d-addr" maxlength="120" required autocomplete="street-address"></div>
+        <div class="field"><label for="d-name">Owner name</label><input type="text" id="d-name" maxlength="80" required autocomplete="name"></div>
+        <div class="field"><label for="d-year">Dues year</label><select id="d-year" required></select></div>
+        <div class="field wide row"><button class="primary" type="submit" id="d-save">Save and continue to payment</button><span class="msg" id="d-msg" role="status"></span></div>
+        <p class="field wide small muted">Card details are entered on Stripe's payment page, never on this site. Your address and name are visible only to you and the lake manager.</p>
+      </form>
+      <div id="dues-mine" hidden><h3>Your dues</h3><div id="dues-list"></div></div>
+    </div>
+    <div class="panel" id="dues-admin" hidden>
+      <div class="row" style="justify-content:space-between"><h3 id="ledger-h">Dues ledger</h3><button type="button" id="ds-edit">Dues settings</button></div>
+      <form class="grid" id="ds-form" hidden>
+        <div class="field"><label for="ds-amount">Annual dues amount (dollars)</label><input type="number" id="ds-amount" min="0" max="100000" step="0.01" placeholder="250"></div>
+        <div class="field"><label for="ds-due">Due date</label><input type="text" id="ds-due" maxlength="30" placeholder="March 1"></div>
+        <div class="field wide"><label for="ds-link">Stripe Payment Link</label><input type="text" id="ds-link" maxlength="200" placeholder="https://buy.stripe.com/..." inputmode="url"></div>
+        <div class="field wide"><label for="ds-note">Note shown to residents, optional</label><textarea id="ds-note" maxlength="400"></textarea></div>
+        <div class="field wide row"><button class="primary" type="submit" id="ds-save">Save settings</button><button type="button" id="ds-cancel">Cancel</button><span class="msg" id="ds-msg" role="status"></span></div>
+      </form>
+      <p class="small muted">A payment made through the link carries the reference shown on each row, as the client reference ID in Stripe. Confirm the payment in Stripe, then mark the row paid here.</p>
+      <div id="dues-ledger"></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="report" aria-labelledby="rep-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="rep-h">Report a problem</h2>
+      <p>Downed trees, muskrat burrows near the dam, odd water color, erosion: tell the lake manager here. Reports are visible only to you and the lake manager.</p>
+    </div>
+    <div class="panel">
+      <p class="empty" id="rep-signin">Sign in to report a problem. Residents can <a href="#account">request an account</a>.</p>
+      <form class="grid" id="rep-form" hidden>
+        <div class="field"><label for="r-cat">What is it?</label>
+          <select id="r-cat" required><option>Downed tree or debris</option><option>Muskrat burrowing near the dam</option><option>Water quality concern</option><option>Shoreline erosion</option><option>Dam or spillway</option><option>Something else</option></select></div>
+        <div class="field"><label for="r-where">Where on the lake?</label><input type="text" id="r-where" maxlength="100" required placeholder="Nearest address or landmark"></div>
+        <div class="field wide"><label for="r-details">What did you see?</label><textarea id="r-details" maxlength="1000" required></textarea></div>
+        <div class="field wide row"><button class="primary" type="submit" id="r-save">Save report</button><span class="msg" id="r-msg" role="status"></span></div>
+      </form>
+      <div id="rep-mine" hidden><h3 id="rep-list-h">Your reports</h3><div id="rep-list"></div></div>
+    </div>
+  </div>
+</section>
+<section class="block" id="account" aria-labelledby="acct-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="acct-h">Resident accounts</h2>
+      <p id="acct-intro">The catch log, problem reports, and dues are for people who live in Taylor Lake Estates. Sign in with the link we email you. No password needed.</p>
+    </div>
+    <div class="panel" id="acct-in" hidden>
+      <div class="row" style="justify-content:space-between"><p id="acct-who"></p><button type="button" id="signout">Sign out</button></div>
+    </div>
+    <div class="two" id="acct-out">
+      <form class="panel" id="signin-form">
+        <h3>Sign in</h3>
+        <div class="field"><label for="si-email">Email address</label><input type="email" id="si-email" maxlength="254" required autocomplete="email" style="width:100%;background:var(--paper);border:1.5px solid var(--line);border-radius:5px;padding:9px 10px"></div>
+        <div class="row"><button class="primary" type="submit" id="si-send">Email me a sign-in link</button></div>
+        <span class="msg" id="si-msg" role="status"></span>
+      </form>
+      <form class="panel" id="req-form">
+        <h3>Request an account</h3>
+        <p class="small muted">The lake manager checks your address against the neighborhood before approving.</p>
+        <div class="field"><label for="rq-name">Your name</label><input type="text" id="rq-name" maxlength="80" required autocomplete="name"></div>
+        <div class="field"><label for="rq-email">Email address</label><input type="email" id="rq-email" maxlength="254" required autocomplete="email" style="width:100%;background:var(--paper);border:1.5px solid var(--line);border-radius:5px;padding:9px 10px"></div>
+        <div class="field"><label for="rq-addr">Street address in Taylor Lake Estates</label><input type="text" id="rq-addr" maxlength="120" required autocomplete="street-address"></div>
+        <label class="check" for="rq-lake"><input type="checkbox" id="rq-lake"> My property is on the lake</label>
+        <div class="row"><button class="primary" type="submit" id="rq-send">Send request</button></div>
+        <span class="msg" id="rq-msg" role="status"></span>
+      </form>
+    </div>
+    <div class="panel" id="admin-people" hidden>
+      <h3 id="req-h">Account requests</h3>
+      <div id="req-list"></div>
+      <h3>Residents</h3>
+      <div id="res-list"></div>
+      <span class="msg" id="ap-msg" role="status"></span>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">Taylor Lake Estates lake association. Maintained by the lake manager.</div></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+function h(tag,attrs,...kids){const e=document.createElement(tag);
+  for(const k in (attrs||{})){const v=attrs[k]; if(k==="class")e.className=v; else if(k.startsWith("on"))e.addEventListener(k.slice(2),v); else if(v!==false&&v!=null)e.setAttribute(k,v===true?"":v);}
+  for(const c of kids){if(c==null)continue; e.append(c.nodeType?c:document.createTextNode(String(c)));} return e;}
+const uidNew=()=> (crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
+const str=(v,max)=>typeof v==="string"?v.slice(0,max):"";
+const fmtDate=d=>{const t=new Date(d+"T12:00:00");return isNaN(t)?"":t.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});};
+
+/* ---------- depth sketch ---------- */
+const canvas=$("#chart");
+function hex(c){c=c.replace("#","");if(c.length===3)c=c.split("").map(x=>x+x).join("");return [0,2,4].map(i=>parseInt(c.slice(i,i+2),16));}
+function mix(a,b,t){const A=hex(a),B=hex(b);return "rgb("+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(",")+")";}
+const LAKE={"deep":[492,143],"levels":[{"d":0,"p":[[503,67,476,65,467,73,461,75,455,80,450,81,442,88,434,89,419,97,398,120,387,122,372,132,361,132,325,146,318,166,302,185,295,186,285,192,253,204,230,220,226,221,223,225,222,234,211,237,193,248,185,260,178,265,176,273,167,279,164,287,140,295,139,311,137,314,114,314,98,305,93,305,89,309,89,324,94,328,117,328,126,321,140,322,165,311,171,306,175,306,189,300,197,292,207,290,223,282,231,280,240,269,249,262,262,258,294,256,301,252,308,252,315,247,321,247,329,242,333,242,338,231,354,218,358,217,374,202,379,195,386,193,389,182,394,179,409,179,416,184,426,182,434,175,442,175,448,181,449,197,447,202,440,209,439,217,433,226,431,236,423,240,419,245,415,246,398,262,395,270,387,277,379,292,373,296,372,306,365,314,364,328,372,342,375,352,380,357,383,366,384,387,389,394,387,409,382,416,372,420,369,444,359,454,352,471,352,484,360,495,360,510,358,515,349,525,342,537,340,546,336,552,335,562,327,567,322,589,312,596,308,603,303,617,303,627,295,639,295,647,292,653,288,656,282,657,276,664,272,674,272,684,265,692,264,702,256,713,254,722,255,730,259,739,263,739,270,734,273,730,275,721,292,707,307,706,311,703,313,697,319,690,319,681,323,669,323,659,330,653,331,646,336,638,337,619,341,614,350,613,353,611,356,602,367,591,368,585,372,581,378,580,387,571,406,558,407,554,403,546,403,537,405,534,412,533,425,525,432,512,437,490,435,470,440,460,440,451,447,442,447,432,455,420,465,415,472,415,478,419,484,430,500,447,501,454,507,462,510,472,513,475,522,478,523,484,517,491,517,503,518,505,527,508,528,526,530,529,540,530,548,535,552,532,558,521,558,517,553,511,556,476,554,471,554,457,551,449,551,439,544,434,542,425,532,423,529,417,527,407,527,376,519,369,520,361,527,356,524,349,524,338,521,333,523,311,519,306,513,304,511,301,511,283,514,278,514,256,517,249,517,241,527,225,528,216,535,210,545,197,550,194,557,193,570,183,571,173,575,162,560,133,547,121,538,107,527,97,519,87,518,83]]},{"d":3,"p":[[501,70,476,69,469,76,462,79,458,83,452,85,445,91,436,93,421,101,420,104,400,124,396,126,390,126,373,137,363,137,356,141,348,142,335,149,330,150,325,165,320,174,305,191,298,192,282,201,256,211,231,228,231,233,227,241,221,244,217,244,209,250,206,250,197,256,192,266,185,273,184,278,175,285,175,288,171,294,149,303,149,308,167,297,171,297,185,291,192,284,205,281,222,273,226,273,239,258,245,255,258,251,292,249,297,246,306,245,312,241,318,241,326,236,329,236,331,230,339,221,345,219,351,213,355,212,363,203,370,198,375,191,382,189,384,180,393,174,409,174,418,180,424,178,432,171,444,171,452,179,453,199,451,204,444,211,444,217,438,227,438,232,435,239,427,244,423,249,419,250,403,265,400,273,392,280,385,295,378,301,378,309,372,316,371,326,378,338,381,348,386,353,390,363,391,384,395,388,397,394,395,411,391,419,387,423,379,427,379,441,375,452,367,459,361,475,361,480,366,485,370,495,370,512,368,518,358,531,352,542,350,551,347,555,347,563,345,568,337,574,335,589,332,596,320,607,315,621,315,632,308,643,307,653,303,661,297,667,290,669,288,671,286,676,285,690,278,700,288,693,300,692,305,685,307,673,310,666,311,653,318,646,319,640,323,634,324,618,328,610,335,603,344,601,346,595,357,584,358,579,366,571,372,570,379,563,394,553,393,534,395,530,400,525,409,523,418,517,423,508,427,494,426,469,432,456,432,447,439,439,439,430,442,424,451,413,462,408,475,408,488,418,491,426,506,441,510,453,517,462,517,466,525,469,531,476,532,485,526,497,531,499,537,507,537,521,546,522,547,520,544,515,544,497,546,493,547,480,546,460,543,452,543,443,537,438,535,432,528,430,524,426,522,421,520,410,520,379,515,376,512,369,513,360,519,354,518,340,515,335,515,323,517,319,517,312,510,309,506,304,506,281,509,276,509,256,513,247,513,239,523,223,524,214,532,207,533,204,542,194,558,188,567,181,567,173,571,165,571,161,568,154,560,143,557,134,552,128,544,122,535,108,524,98,516,88,515,84]]},{"d":6,"p":[[499,78,480,77,476,82,462,91,456,93,448,100,441,101,429,108,405,134,390,139,380,147,367,149,343,159,338,164,337,171,333,179,325,188,323,193,312,204,304,206,297,211,260,228,252,235,288,233,291,231,297,231,305,227,314,226,318,224,324,215,359,191,365,183,372,179,373,174,380,167,386,164,404,163,420,167,423,164,430,161,443,161,454,166,459,172,463,184,463,201,460,210,454,217,453,225,449,231,447,242,439,252,426,261,416,271,409,284,402,291,397,303,392,309,392,315,387,322,394,339,402,349,408,372,408,379,412,385,414,393,413,410,410,424,405,432,398,439,395,458,388,469,384,472,384,475,388,481,392,504,400,503,404,497,406,490,406,467,415,439,420,433,423,420,437,402,454,393,472,391,482,393,489,397,503,410,504,413,504,388,498,379,497,371,499,355,504,345,502,342,501,335,502,320,495,312,493,305,493,288,498,268,498,255,502,245,504,232,511,224,516,209,538,186,546,182,550,182,559,176,559,171,562,162,550,138,539,128,529,112,519,104]]},{"d":9,"p":[[492,89,485,89,454,111,446,113,438,118,419,141,412,147,406,149,416,151,422,148,438,147,452,150,459,154,471,167,476,184,477,197,475,211,467,226,467,231,463,238,461,251,456,259,430,284,429,288,419,302,416,311,411,318,410,324,412,329,421,341,432,378,445,373,465,370,475,371,476,361,482,344,482,329,476,319,475,314,475,289,481,268,482,254,491,225,500,215,502,206,508,198,529,178,539,172,546,171,550,163,544,154,541,145,530,134,520,118,509,109]]},{"d":12,"p":[[450,298,438,323,442,329,449,349,453,348,455,344,455,339,451,332],[486,106,479,110,473,116,471,116,461,125,454,127,447,133,461,137,476,150,486,165,491,182,492,192,512,173,531,160,529,158,528,153,522,148,509,128,503,124]]}]};
+function drawChart(){
+  const w=canvas.clientWidth,ht=canvas.clientHeight; if(!w||!ht)return;
+  const dpr=window.devicePixelRatio||1; canvas.width=w*dpr; canvas.height=ht*dpr;
+  const g=canvas.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0);
+  const cs=getComputedStyle(document.documentElement),tok=n=>cs.getPropertyValue(n).trim()||"#888";
+  const ink=tok("--ink"),line=tok("--line"),shallow=tok("--shallow"),deep=tok("--deep"),buoy=tok("--buoy"),muted=tok("--muted");
+  g.clearRect(0,0,w,ht);
+  g.strokeStyle=line; g.lineWidth=1; g.globalAlpha=.55;
+  for(let x=20;x<w;x+=40){g.beginPath();g.moveTo(x+.5,0);g.lineTo(x+.5,ht);g.stroke();}
+  for(let y=20;y<ht;y+=40){g.beginPath();g.moveTo(0,y+.5);g.lineTo(w,y+.5);g.stroke();}
+  g.globalAlpha=1;
+  /* image frame the shoreline was traced in: x 60..640, y 40..760, north up */
+  const FX=60,FY=40,FW=580,FH=720,k=Math.min((w-16)/FW,(ht-16)/FH),ox=(w-FW*k)/2,oy=(ht-FH*k)/2;
+  const X=x=>ox+(x-FX)*k,Y=y=>oy+(y-FY)*k,n=LAKE.levels.length;
+  LAKE.levels.forEach((L,i)=>{
+    g.fillStyle=mix(shallow,deep,i/n);
+    g.strokeStyle=i?mix(shallow,deep,Math.min(1,i/n+.25)):ink; g.lineWidth=i?1:1.6; g.lineJoin="round";
+    L.p.forEach(p=>{g.beginPath();for(let j=0;j<p.length;j+=2){j?g.lineTo(X(p[j]),Y(p[j+1])):g.moveTo(X(p[j]),Y(p[j+1]));}g.closePath();g.fill();g.stroke();});});
+  const lab=(t,x,y,rot,col,font,al)=>{g.save();g.translate(X(x),Y(y));g.rotate(rot||0);g.fillStyle=col;g.font=font||"600 11px Figtree, system-ui, sans-serif";g.textAlign=al||"center";g.textBaseline="middle";g.fillText(t,0,0);g.restore();};
+  /* dam, assumed on the straight northeast bank */
+  g.strokeStyle=ink; g.lineWidth=5; g.lineCap="butt"; g.beginPath(); g.moveTo(X(503),Y(58)); g.lineTo(X(585),Y(155)); g.stroke();
+  lab("D A M",560,92,Math.atan2(97,82),ink,"700 11px Figtree, system-ui, sans-serif");
+  const dx=X(LAKE.deep[0]),dy=Y(LAKE.deep[1]);
+  g.strokeStyle=buoy; g.lineWidth=2; g.beginPath(); g.moveTo(dx-6,dy);g.lineTo(dx+6,dy);g.moveTo(dx,dy-6);g.lineTo(dx,dy+6);g.stroke();
+  lab("\u224815 ft",LAKE.deep[0]+14,LAKE.deep[1]+26,0,"#e9f4f3","700 12px Figtree, system-ui, sans-serif");
+  lab("Taylor Lake Dr",165,170,-0.62,muted);
+  lab("Old Homestead Dr",215,520,Math.PI/2*-1+0.12,muted);
+  lab("Lake Terrace Ct",430,690,-0.95,muted);
+  /* scale bar: 200 ft at 1.53 ft per traced pixel (32 ft street = ~21 px) */
+  const sx=X(470),sy=Y(735),sl=200/1.53*k; g.strokeStyle=ink; g.lineWidth=1.5;
+  g.beginPath(); g.moveTo(sx,sy-4); g.lineTo(sx,sy); g.lineTo(sx+sl,sy); g.lineTo(sx+sl,sy-4); g.stroke();
+  g.fillStyle=ink; g.font="700 11px Figtree, system-ui, sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText("200 ft",sx+sl/2,sy-10);
+  /* north arrow */
+  const nx=X(110),ny=Y(690); g.strokeStyle=ink; g.fillStyle=ink; g.lineWidth=1.5;
+  g.beginPath(); g.moveTo(nx,ny+18); g.lineTo(nx,ny-14); g.stroke();
+  g.beginPath(); g.moveTo(nx,ny-22); g.lineTo(nx-5,ny-10); g.lineTo(nx+5,ny-10); g.closePath(); g.fill();
+  g.font="700 11px Figtree, system-ui, sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText("N",nx,ny+28);
+}
+drawChart();
+if(window.ResizeObserver)new ResizeObserver(drawChart).observe(canvas);
+new MutationObserver(drawChart).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+if(window.matchMedia)matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",drawChart);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawChart);
+
+/* ---------- data: Supabase ---------- */
+const SB_URL="https://rfynqrfylvbqttqarkpl.supabase.co",SB_KEY="sb_publishable_nyTpfrasZU2ZNiacogHrtw_qiln7wfE";
+const sb=window.supabase&&window.supabase.createClient?window.supabase.createClient(SB_URL,SB_KEY):null;
+const S={me:null,profile:null,status:null,catches:[],reports:[],dues:[],duesCfg:null,people:{},requests:[],busy:{}};
+const COND={ok:"Open",warn:"Advisory",crit:"Closed"};
+const LINK_RE=/^https:\/\/buy\.stripe\.com\/[A-Za-z0-9_\/-]+$/;
+const isRes=()=>!!(S.profile&&S.profile.active);
+const isMgr=()=>isRes()&&!!S.profile.is_manager;
+const isLake=()=>isRes()&&!!S.profile.is_lakefront;
+const day=t=>{const d=new Date(t);return isNaN(d)?"":d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});};
+const money=c=>typeof c==="number"?"$"+(c/100).toFixed(c%100?2:0):"";
+function say(sel,text,cls){const e=$(sel);e.textContent=text;e.className="msg "+(cls||"");}
+function fail(sel,error){
+  const c=error&&error.code;
+  say(sel,c==="42501"?"Your account does not have access to do that.":c==="23505"?"That is already on file.":c==="23514"?"One of those values is out of range. Check the form and try again.":"That did not save. Check your connection and try again.","err");
+}
+function who(uid){return uid===(S.me&&S.me.id)?"You":(S.people[uid]&&S.people[uid].display_name)||"A neighbor";}
+$("#c-date").value=new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+$("#c-date").max=$("#c-date").value;
+(function(){const y=new Date().getFullYear(),sel=$("#d-year");[y,y+1].forEach(v=>sel.append(h("option",null,v)));})();
+
+/* ---------- lake status ---------- */
+function renderStatus(){
+  const d=S.status;
+  $("#st-edit").hidden=!isMgr();
+  if(!d){["#st-clarity","#st-temp","#st-level"].forEach(s=>$(s).textContent="Not yet posted");
+    $("#st-pill").hidden=true;$("#st-notice").hidden=true;$("#st-upcoming-box").hidden=true;return;}
+  $("#st-clarity").textContent=d.clarity||"Not yet measured";
+  $("#st-temp").textContent=d.surface_temp||"Not yet measured";
+  $("#st-level").textContent=d.water_level||"Not yet measured";
+  const c=COND[d.condition]?d.condition:"ok",pill=$("#st-pill");
+  pill.className="pill "+c;pill.textContent=COND[c];pill.hidden=false;
+  $("#st-notice").textContent=d.notice||"";$("#st-notice").hidden=!d.notice;
+  const up=(d.upcoming||[]).filter(Boolean);
+  $("#st-upcoming").replaceChildren(...up.map(x=>h("li",null,x)));$("#st-upcoming-box").hidden=!up.length;
+  const t=new Date(d.updated_at);
+  $("#st-updated").textContent=isNaN(t)?"":"Updated "+t.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"});
+}
+async function loadStatus(){
+  const {data,error}=await sb.from("lake_status").select("condition,clarity,surface_temp,water_level,notice,upcoming,updated_at").eq("id",1).maybeSingle();
+  if(error){$("#st-updated").textContent="The latest readings can't be reached right now.";S.status=null;}else S.status=data;
+  renderStatus();
+}
+$("#st-edit").addEventListener("click",()=>{
+  const d=S.status||{};
+  $("#f-cond").value=COND[d.condition]?d.condition:"ok";
+  $("#f-clarity").value=d.clarity||"";$("#f-temp").value=d.surface_temp||"";$("#f-level").value=d.water_level||"";
+  $("#f-notice").value=d.notice||"";$("#f-upcoming").value=(d.upcoming||[]).join("\n");
+  $("#st-form").hidden=false;$("#f-clarity").focus();
+});
+$("#st-cancel").addEventListener("click",()=>{$("#st-form").hidden=true;});
+$("#st-form").addEventListener("submit",async ev=>{
+  ev.preventDefault();if(S.busy.s)return;S.busy.s=true;$("#st-save").disabled=true;say("#st-msg","Publishing…");
+  const {error}=await sb.from("lake_status").update({condition:$("#f-cond").value,clarity:$("#f-clarity").value.trim(),surface_temp:$("#f-temp").value.trim(),
+    water_level:$("#f-level").value.trim(),notice:$("#f-notice").value.trim(),
+    upcoming:$("#f-upcoming").value.split("\n").map(x=>x.trim().slice(0,160)).filter(Boolean).slice(0,12),
+    updated_at:new Date().toISOString(),updated_by:S.me.id}).eq("id",1);
+  S.busy.s=false;$("#st-save").disabled=false;
+  if(error){fail("#st-msg",error);return;}
+  say("#st-msg","");$("#st-form").hidden=true;loadStatus();
+});
+
+/* ---------- catch log ---------- */
+function renderLog(){
+  const box=$("#log-list");$("#catch-form").hidden=!isRes();
+  if(!isRes()){["#t-count","#t-bass","#t-rel"].forEach(s=>$(s).textContent="–");
+    box.replaceChildren(h("p",{class:"empty"},S.me?"Your account is not active. Contact the lake manager.":"Sign in to see the neighborhood catch log."));return;}
+  const all=S.catches,f=$("#log-filter").value,rows=f?all.filter(c=>c.species===f):all;
+  $("#t-count").textContent=all.length;
+  const bass=all.filter(c=>c.species==="Bass").reduce((m,c)=>Math.max(m,Number(c.length_in)||0),0);
+  $("#t-bass").textContent=bass?bass+" in":"–";
+  $("#t-rel").textContent=all.length?Math.round(all.filter(c=>c.released).length/all.length*100)+"%":"–";
+  if(!rows.length){box.replaceChildren(h("p",{class:"empty"},all.length?"No "+f.toLowerCase()+" logged yet.":"No catches logged yet. Be the first: add yours below."));return;}
+  const tb=h("tbody");
+  for(const c of rows.slice(0,200)){
+    const mine=c.user_id===S.me.id;
+    tb.append(h("tr",null,h("td",{class:"num"},fmtDate(c.caught_on)),h("td",null,who(c.user_id)),h("td",null,c.species),
+      h("td",{class:"num"},Number(c.length_in)+" in"),h("td",{class:"num"},c.weight_lb?Number(c.weight_lb)+" lb":""),
+      h("td",null,c.released?"Released":"Kept"),h("td",{class:"note"},c.note),
+      h("td",null,(mine||isMgr())?h("button",{class:"link",type:"button","aria-label":"Remove this catch",onclick:()=>removeCatch(c)},"Remove"):null)));
+  }
+  box.replaceChildren(h("div",{class:"scroll"},h("table",null,
+    h("thead",null,h("tr",null,...["Date","Angler","Species","Length","Weight","","Notes",""].map(t=>h("th",{scope:"col"},t)))),tb)));
+}
+async function loadCatches(){
+  if(!isRes()){S.catches=[];renderLog();return;}
+  const {data,error}=await sb.from("catches").select("id,user_id,species,length_in,weight_lb,caught_on,released,note,created_at")
+    .order("caught_on",{ascending:false}).order("created_at",{ascending:false}).limit(500);
+  if(error){$("#log-list").replaceChildren(h("p",{class:"empty"},"The catch log can't be reached right now."));return;}
+  S.catches=data||[];renderLog();
+}
+async function removeCatch(c){
+  if(S.busy.c)return;S.busy.c=true;
+  const {error}=await sb.from("catches").delete().eq("id",c.id);S.busy.c=false;
+  if(error){fail("#c-msg",error);return;} say("#c-msg","Removed.","good");loadCatches();
+}
+$("#log-filter").addEventListener("change",renderLog);
+$("#catch-form").addEventListener("submit",async ev=>{
+  ev.preventDefault();if(!isRes()||S.busy.c)return;
+  const length=Number($("#c-length").value),weight=Number($("#c-weight").value)||null,date=$("#c-date").value;
+  if(!(length>0&&length<=60)){say("#c-msg","Enter a length between 1 and 60 inches.","err");return;}
+  if(!date){say("#c-msg","Pick the date you caught it.","err");return;}
+  S.busy.c=true;$("#c-save").disabled=true;say("#c-msg","Saving…");
+  const {error}=await sb.from("catches").insert({species:$("#c-species").value,length_in:length,weight_lb:weight,caught_on:date,
+    released:$("#c-released").checked,note:$("#c-note").value.trim().slice(0,140)});
+  S.busy.c=false;$("#c-save").disabled=false;
+  if(error){fail("#c-msg",error);return;}
+  $("#c-length").value="";$("#c-weight").value="";$("#c-note").value="";say("#c-msg","Added to the log.","good");loadCatches();
+});
+
+/* ---------- reports ---------- */
+function renderReports(){
+  $("#rep-form").hidden=!isRes();$("#rep-signin").hidden=isRes();
+  const rows=S.reports.slice().sort((a,b)=>(a.resolved-b.resolved)||(new Date(b.created_at)-new Date(a.created_at)));
+  $("#rep-mine").hidden=!isRes()||(!rows.length&&!isMgr());
+  $("#rep-list-h").textContent=isMgr()?"All reports ("+rows.filter(r=>!r.resolved).length+" open)":"Your reports";
+  const box=$("#rep-list");
+  if(!rows.length){box.replaceChildren(h("p",{class:"empty"},"No reports yet."));return;}
+  box.replaceChildren(...rows.map(r=>h("div",{class:"report"},
+    h("div",{class:"row"},h("strong",null,r.category),h("span",{class:"tag "+(r.resolved?"ok":"warn")},r.resolved?"Resolved":"Open")),
+    h("p",{class:"small muted"},r.location+" · "+day(r.created_at)+(isMgr()?" · "+who(r.user_id):"")),
+    h("p",null,r.details),
+    isMgr()?h("div",null,h("button",{class:"link",type:"button",onclick:()=>toggleReport(r)},r.resolved?"Reopen":"Mark resolved")):null)));
+}
+async function loadReports(){
+  if(!isRes()){S.reports=[];renderReports();return;}
+  const {data,error}=await sb.from("reports").select("id,user_id,category,location,details,resolved,created_at").order("created_at",{ascending:false}).limit(500);
+  if(!error)S.reports=data||[];renderReports();
+}
+async function toggleReport(r){
+  if(S.busy.r)return;S.busy.r=true;
+  const {error}=await sb.from("reports").update({resolved:!r.resolved,resolved_at:r.resolved?null:new Date().toISOString()}).eq("id",r.id);
+  S.busy.r=false;if(error){fail("#r-msg",error);return;} loadReports();
+}
+$("#rep-form").addEventListener("submit",async ev=>{
+  ev.preventDefault();if(!isRes()||S.busy.r)return;
+  const where=$("#r-where").value.trim(),details=$("#r-details").value.trim();
+  if(!where||!details){say("#r-msg","Add where it is and what you saw.","err");return;}
+  S.busy.r=true;$("#r-save").disabled=true;say("#r-msg","Saving…");
+  const {error}=await sb.from("reports").insert({category:$("#r-cat").value,location:where.slice(0,100),details:details.slice(0,1000)});
+  S.busy.r=false;$("#r-save").disabled=false;
+  if(error){fail("#r-msg",error);return;}
+  $("#r-where").value="";$("#r-details").value="";say("#r-msg","Saved. The lake manager will see it on this page.","good");loadReports();
+});
+
+/* ---------- dues (lakefront owners and the manager only) ---------- */
+function payHref(id){const l=S.duesCfg&&S.duesCfg.payment_link;return l&&LINK_RE.test(l)?l+"?client_reference_id="+encodeURIComponent(id):null;}
+function renderDues(){
+  const show=isLake()||isMgr();
+  $("#dues").hidden=!show;$("#nav-dues").hidden=!show;if(!show)return;
+  const c=S.duesCfg||{},amt=money(c.amount_cents);
+  $("#d-amount").textContent=amt||"Not yet set";$("#d-due").textContent=c.due_text||"Not yet set";
+  $("#d-note").textContent=c.note||"";$("#d-note").hidden=!c.note;
+  $("#dues-pay").hidden=!isLake();
+  const rows=S.dues.slice().sort((a,b)=>(b.dues_year-a.dues_year)||a.property_address.localeCompare(b.property_address));
+  const mine=rows.filter(r=>r.user_id===S.me.id);
+  $("#dues-mine").hidden=!mine.length;
+  $("#dues-list").replaceChildren(...mine.map(r=>{const href=payHref(r.id);
+    return h("div",{class:"report"},
+      h("div",{class:"row"},h("strong",null,r.dues_year+" dues, "+r.property_address),h("span",{class:"tag "+(r.paid_at?"ok":"warn")},r.paid_at?"Paid, confirmed "+day(r.paid_at):"Awaiting payment")),
+      r.paid_at?null:(href?h("div",{class:"row"},h("a",{class:"btn",href,target:"_blank",rel:"noopener"},"Pay "+(amt||"dues")+" by card on Stripe"),
+          h("span",{class:"small muted"},"Opens Stripe's payment page. This row changes to Paid once the lake manager confirms it."))
+        :h("p",{class:"small muted"},"Card payment is not set up yet. Your details are saved; come back to pay.")));}));
+  $("#dues-admin").hidden=!isMgr();if(!isMgr())return;
+  $("#ledger-h").textContent="Dues ledger ("+rows.filter(r=>r.paid_at).length+" of "+rows.length+" paid)";
+  const box=$("#dues-ledger");
+  if(!rows.length){box.replaceChildren(h("p",{class:"empty"},c.payment_link?"No one has started a dues payment yet.":"Add your Stripe Payment Link in Dues settings to start taking card payments."));return;}
+  const tb=h("tbody");
+  for(const r of rows)tb.append(h("tr",null,h("td",{class:"num"},r.dues_year),h("td",{class:"note"},r.property_address),h("td",{class:"note"},r.owner_name),h("td",null,who(r.user_id)),
+    h("td",{class:"note small"},r.id),h("td",null,h("span",{class:"tag "+(r.paid_at?"ok":"warn")},r.paid_at?"Paid":"Awaiting")),
+    h("td",null,h("button",{class:"link",type:"button",onclick:()=>togglePaid(r)},r.paid_at?"Undo":"Mark paid"))));
+  box.replaceChildren(h("div",{class:"scroll"},h("table",null,h("thead",null,h("tr",null,...["Year","Property","Owner","Account","Stripe reference","Status",""].map(t=>h("th",{scope:"col"},t)))),tb)));
+}
+async function loadDues(){
+  if(!(isLake()||isMgr())){S.dues=[];S.duesCfg=null;renderDues();return;}
+  const [a,b]=await Promise.all([
+    sb.from("dues_settings").select("amount_cents,due_text,payment_link,note").eq("id",1).maybeSingle(),
+    sb.from("dues_payments").select("id,user_id,property_address,owner_name,dues_year,paid_at,created_at").limit(1000)]);
+  if(!a.error)S.duesCfg=a.data;if(!b.error)S.dues=b.data||[];renderDues();
+}
+async function togglePaid(r){
+  if(S.busy.d)return;S.busy.d=true;
+  const {error}=await sb.from("dues_payments").update({paid_at:r.paid_at?null:new Date().toISOString()}).eq("id",r.id);
+  S.busy.d=false;if(error){$("#ds-form").hidden=false;fail("#ds-msg",error);return;} loadDues();
+}
+$("#dues-form").addEventListener("submit",async ev=>{
+  ev.preventDefault();if(!isLake()||S.busy.d)return;
+  const addr=$("#d-addr").value.trim().slice(0,120),name=$("#d-name").value.trim().slice(0,80),year=Number($("#d-year").value);
+  if(!addr||!name){say("#d-msg","Add the property address and the owner name.","err");return;}
+  S.busy.d=true;$("#d-save").disabled=true;say("#d-msg","Saving…");
+  const {error}=await sb.from("dues_payments").insert({property_address:addr,owner_name:name,dues_year:year});
+  S.busy.d=false;$("#d-save").disabled=false;
+  if(error&&error.code!=="23505"){fail("#d-msg",error);return;}
+  say("#d-msg",error?"You already have a record for that property and year. Use the pay button below.":(payHref("x")?"Saved. Use the pay button below to finish on Stripe.":"Saved. Card payment is not set up yet."),"good");loadDues();
+});
+$("#ds-edit").addEventListener("click",()=>{const c=S.duesCfg||{};
+  $("#ds-amount").value=typeof c.amount_cents==="number"?(c.amount_cents/100):"";$("#ds-due").value=c.due_text||"";$("#ds-link").value=c.payment_link||"";$("#ds-note").value=c.note||"";
+  say("#ds-msg","");$("#ds-form").hidden=false;$("#ds-amount").focus();});
+$("#ds-cancel").addEventListener("click",()=>{$("#ds-form").hidden=true;});
+$("#ds-form").addEventListener("submit",async ev=>{
+  ev.preventDefault();if(S.busy.ds)return;
+  const link=$("#ds-link").value.trim().split("?")[0],raw=$("#ds-amount").value.trim(),amt=raw===""?null:Math.round(Number(raw)*100);
+  if(link&&!LINK_RE.test(link)){say("#ds-msg","The link must be a Stripe Payment Link that starts with https://buy.stripe.com/","err");return;}
+  if(amt!==null&&!(amt>=0)){say("#ds-msg","Enter the dues amount in dollars, like 250.","err");return;}
+  S.busy.ds=true;$("#ds-save").disabled=true;say("#ds-msg","Saving…");
+  const {error}=await sb.from("dues_settings").update({amount_cents:amt,due_text:$("#ds-due").value.trim(),payment_link:link,note:$("#ds-note").value.trim(),updated_at:new Date().toISOString()}).eq("id",1);
+  S.busy.ds=false;$("#ds-save").disabled=false;
+  if(error){fail("#ds-msg",error);return;} say("#ds-msg","");$("#ds-form").hidden=true;loadDues();
+});
+
+/* ---------- accounts ---------- */
+function renderAccount(){
+  $("#acct-in").hidden=!S.me;$("#acct-out").hidden=!!S.me;
+  $("#nav-account").textContent=S.me?"Account":"Sign in";
+  if(S.me)$("#acct-who").textContent="Signed in as "+((S.profile&&S.profile.display_name)||S.me.email||"a resident")+(isMgr()?" (lake manager)":isLake()?" (lakefront owner)":"")+".";
+  $("#admin-people").hidden=!isMgr();if(!isMgr())return;
+  const pend=S.requests.filter(r=>r.status==="pending");
+  $("#req-h").textContent="Account requests ("+pend.length+" waiting)";
+  $("#req-list").replaceChildren(...(pend.length?pend.map(r=>h("div",{class:"report"},
+    h("div",{class:"row"},h("strong",null,r.full_name),h("span",{class:"small muted"},day(r.created_at))),
+    h("p",{class:"small"},r.street_address+" · "+r.email+(r.says_lakefront?" · says the property is on the lake":"")),
+    h("div",{class:"row"},
+      h("button",{class:"link",type:"button",onclick:()=>decide(r,"approved",false)},"Approve"),
+      h("button",{class:"link",type:"button",onclick:()=>decide(r,"approved",true)},"Approve as lakefront"),
+      h("button",{class:"link",type:"button",onclick:()=>decide(r,"denied",false)},"Deny")))):[h("p",{class:"empty"},"No requests waiting.")]));
+  const ppl=Object.values(S.people).sort((a,b)=>a.display_name.localeCompare(b.display_name)),tb=h("tbody");
+  for(const p of ppl)tb.append(h("tr",null,h("td",null,p.display_name||"(no name)"),
+    h("td",null,p.is_manager?"Lake manager":p.is_lakefront?"Lakefront":"Resident"),h("td",null,p.active?"Active":"Deactivated"),
+    h("td",null,p.is_manager?null:h("button",{class:"link",type:"button",onclick:()=>setFlag(p,{is_lakefront:!p.is_lakefront})},p.is_lakefront?"Remove lakefront":"Make lakefront")),
+    h("td",null,p.is_manager?null:h("button",{class:"link",type:"button",onclick:()=>setFlag(p,{active:!p.active})},p.active?"Deactivate":"Reactivate"))));
+  $("#res-list").replaceChildren(h("div",{class:"scroll"},h("table",null,h("thead",null,h("tr",null,...["Name","Type","Status","",""].map(t=>h("th",{scope:"col"},t)))),tb)));
+}
+async function decide(r,status,lake){
+  if(S.busy.a)return;S.busy.a=true;
+  const {error}=await sb.from("account_requests").update({status,is_lakefront:lake,decided_at:new Date().toISOString()}).eq("id",r.id);
+  S.busy.a=false;if(error){fail("#ap-msg",error);return;}
+  say("#ap-msg",status==="approved"?"Approved. Let "+r.full_name+" know they can now sign in with "+r.email+".":"Denied.","good");loadPeople();
+}
+async function setFlag(p,patch){
+  if(S.busy.a)return;S.busy.a=true;
+  const {error}=await sb.from("profiles").update(patch).eq("id",p.id);
+  S.busy.a=false;if(error){fail("#ap-msg",error);return;} say("#ap-msg","");loadPeople();
+}
+async function loadPeople(){
+  S.people={};S.requests=[];
+  if(isRes()){const {data}=await sb.from("profiles").select("id,display_name,is_manager,is_lakefront,active").limit(2000);
+    for(const p of data||[])S.people[p.id]=p;}
+  if(isMgr()){const {data}=await sb.from("account_requests").select("id,full_name,email,street_address,says_lakefront,status,created_at").order("created_at",{ascending:false}).limit(500);
+    S.requests=data||[];}
+  renderAccount();
+}
+$("#signin-form").addEventListener("submit",async ev=>{
+  ev.preventDefault();if(S.busy.si)return;
+  const email=$("#si-email").value.trim().toLowerCase();if(!email)return;
+  S.busy.si=true;$("#si-send").disabled=true;say("#si-msg","Sending…");
+  const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
+  S.busy.si=false;$("#si-send").disabled=false;
+  if(error)say("#si-msg",error.status===429?"Too many tries. Wait a minute and try again.":"We could not send a link to that address. If you have not been approved yet, request an account.","err");
+  else say("#si-msg","Check your email for the sign-in link.","good");
+});
+$("#req-form").addEventListener("submit",async ev=>{
+  ev.preventDefault();if(S.busy.rq)return;
+  const full_name=$("#rq-name").value.trim().slice(0,80),email=$("#rq-email").value.trim().toLowerCase(),street_address=$("#rq-addr").value.trim().slice(0,120);
+  if(!full_name||!email||!street_address){say("#rq-msg","Fill in your name, email, and address.","err");return;}
+  S.busy.rq=true;$("#rq-send").disabled=true;say("#rq-msg","Sending…");
+  const {error}=await sb.from("account_requests").insert({full_name,email,street_address,says_lakefront:$("#rq-lake").checked});
+  S.busy.rq=false;$("#rq-send").disabled=false;
+  if(error&&error.code==="23505"){say("#rq-msg","A request for that email is already on file. Once it is approved you can sign in.","good");return;}
+  if(error){say("#rq-msg",error.code==="23514"?"Check the email address and try again.":"That did not go through. Check your connection and try again.","err");return;}
+  $("#req-form").reset();say("#rq-msg","Request saved. The lake manager will review it. Once approved, sign in with this email.","good");
+});
+$("#signout").addEventListener("click",async()=>{await sb.auth.signOut();});
+
+async function applySession(session){
+  const uid=session&&session.user?session.user.id:null,prev=S.me?S.me.id:null;
+  S.me=uid?session.user:null;
+  if(uid&&uid===prev&&S.profile)return;           /* token refresh: nothing changed */
+  S.profile=null;
+  if(uid){const {data}=await sb.from("profiles").select("id,display_name,is_manager,is_lakefront,active").eq("id",uid).maybeSingle();S.profile=data||null;}
+  renderStatus();
+  await loadPeople();
+  loadCatches();loadReports();loadDues();
+}
+if(!sb){
+  $("#st-updated").textContent="The latest readings can't be reached right now.";renderStatus();renderLog();renderReports();renderDues();
+  ["#si-send","#rq-send"].forEach(s=>$(s).disabled=true);say("#si-msg","Sign-in is unavailable right now. Reload the page to try again.","err");
+}else{
+  loadStatus();
+  sb.auth.onAuthStateChange((ev,session)=>{setTimeout(()=>applySession(session),0);});
+}
+})();
+</script>
+</body>
+</html>
