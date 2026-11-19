@@ -6,37 +6,30 @@
 <title>Taylor Lake Estates</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-/* Layout idea: a lake survey sheet. Depth-chart hero, a status strip read like a gauge board, then five plain working sections. */
+/* Layout idea: a window onto the lake. The hero is a drawn view from the dock that follows the real time of day and weather; the page palette follows it (light by day, indigo after sunset). */
 :root{
-  --paper:#eef2ef; --surface:#fbfcfb; --ink:#14292b; --muted:#56696a; --line:#cbd7d3;
-  --water:#1d6a75; --shallow:#cfe5e4; --deep:#0f4a58; --buoy:#c2501a;
-  --ok:#2c7a4c; --warn:#a36f0c; --crit:#b3372b;
-  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
-  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  --paper:#f4f1ea; --surface:#fffdf8; --ink:#17163a; --muted:#5b5975; --line:#dcd6c9;
+  --water:#2a5c8f; --shallow:#cfe0ee; --deep:#1b2a5e; --buoy:#b84a17; --on-accent:#fff;
+  --ok:#2c7a4c; --warn:#946407; --crit:#b3372b;
+  --display:"DM Serif Display",Georgia,"Times New Roman",serif;
+  --body:"DM Sans","Segoe UI",system-ui,sans-serif;
   color-scheme:light;
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --paper:#0d191b; --surface:#14262a; --ink:#e3eeec; --muted:#94a9a9; --line:#283c40;
-    --water:#63b7c3; --shallow:#2a6470; --deep:#0a2c36; --buoy:#f08a4b;
-    --ok:#5fc089; --warn:#e0b04a; --crit:#f0796c; color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --paper:#0d191b; --surface:#14262a; --ink:#e3eeec; --muted:#94a9a9; --line:#283c40;
-  --water:#63b7c3; --shallow:#2a6470; --deep:#0a2c36; --buoy:#f08a4b;
-  --ok:#5fc089; --warn:#e0b04a; --crit:#f0796c; color-scheme:dark;
+:root[data-phase="dusk"],:root[data-phase="night"]{
+  --paper:#0f1230; --surface:#191d44; --ink:#f1eef7; --muted:#b5b2cf; --line:#2f3362;
+  --water:#9cc0ea; --shallow:#2c3f78; --deep:#161a44; --buoy:#ffcf7a; --on-accent:#17163a;
+  --ok:#6fd09a; --warn:#f0c463; --crit:#ff8f85; color-scheme:dark;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:72px}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
-h1{font-size:clamp(2.6rem,7vw,5rem);font-weight:800;letter-spacing:-.03em}
-h2{font-size:clamp(1.8rem,4vw,2.7rem);font-weight:800;letter-spacing:-.02em}
-h3{font-size:1.2rem;font-weight:700;line-height:1.2}
+h1{font-size:clamp(2.8rem,7.4vw,6.2rem);font-weight:400;letter-spacing:-.01em;line-height:.98}
+h2{font-size:clamp(2rem,4.4vw,3.1rem);font-weight:400;letter-spacing:-.01em}
+h3{font-family:var(--body);font-size:1.2rem;font-weight:700;line-height:1.2}
 p{margin:0;max-width:65ch}
 a{color:var(--water)}
 :focus-visible{outline:3px solid var(--buoy);outline-offset:2px}
@@ -45,27 +38,50 @@ a{color:var(--water)}
 .muted{color:var(--muted)}
 .small{font-size:.88rem}
 
-/* nav */
-.top{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;gap:8px 22px;align-items:center;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
-.brand{font-family:var(--display);font-weight:800;font-size:1.05rem;color:var(--ink);text-decoration:none;margin-right:auto}
-.top nav{display:flex;gap:4px 18px;flex-wrap:wrap}
-.top nav a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.93rem;padding:2px 0;border-bottom:2px solid transparent}
-.top nav a:hover{border-bottom-color:var(--buoy)}
+/* nav, over the scene */
+.top{position:absolute;top:0;left:0;right:0;z-index:3;color:#f6f3ee}
+.top .wrap{display:flex;gap:8px 22px;align-items:center;flex-wrap:wrap;padding-top:22px;padding-bottom:12px;max-width:1280px}
+.brand{font-weight:700;font-size:.9rem;letter-spacing:.2em;text-transform:uppercase;color:#f6f3ee;text-decoration:none;margin-right:auto}
+.top nav{display:flex;gap:4px 20px;flex-wrap:wrap;align-items:center}
+.top nav a{color:#f6f3ee;text-decoration:none;font-weight:500;font-size:.95rem;padding:10px 0;border-bottom:2px solid transparent}
+.top nav a:hover{border-bottom-color:#ffcf7a}
+.top nav a.pill-link{border:1px solid rgba(255,255,255,.65);border-radius:999px;padding:9px 18px}
 
-/* hero */
-.hero{padding:44px 0 28px}
-.hero .wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:36px;align-items:center}
-.hero p.lede{font-size:1.15rem;margin-top:18px;max-width:46ch}
-.kicker{font-weight:700;color:var(--water);letter-spacing:.08em;text-transform:uppercase;font-size:.8rem;margin-bottom:12px}
-.chartbox{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px}
-#chart{display:block;width:100%;height:500px}
+/* hero: the view from the dock */
+.hero{position:relative;overflow:hidden;background:#141a3c;color:#f6f3ee}
+.scene{position:absolute;inset:0}
+.scene svg{width:100%;height:100%;display:block}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,12,36,.5),rgba(8,12,36,.12) 55%,rgba(8,12,36,0));pointer-events:none}
+.hero-grid{position:relative;z-index:2;max-width:1280px;display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:40px;padding-top:128px;padding-bottom:56px;min-height:780px;align-items:start}
+.hero-copy{display:grid;gap:20px;align-content:start;padding-top:18px}
+.kicker{font-weight:600;color:#ffcf7a;letter-spacing:.2em;text-transform:uppercase;font-size:.85rem}
+.hero h1{color:#fbf8f2;max-width:11ch}
+.hero p.lede{font-size:1.2rem;line-height:1.5;max-width:44ch;color:#f1ecf3}
+.hero-cards{display:grid;gap:14px}
+.glass{background:rgba(12,14,36,.66);border:1px solid rgba(255,255,255,.22);border-radius:18px;padding:18px 20px;display:grid;gap:10px;color:#f6f3ee;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.glass .lab{font-size:.74rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#ffcf7a}
+.glass .big{font-family:var(--display);font-size:4.2rem;line-height:1}
+.glass .sub{color:#dcd6e6;font-size:.9rem}
+.glass a{color:#ffcf7a}
+.wx-now{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.wx-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;font-size:.88rem;color:#dcd6e6}
+.wx-facts b{display:block;color:#f6f3ee;font-weight:600}
+.moon-now{display:flex;align-items:center;gap:16px}
+.moon-now svg{width:72px;height:72px;flex:none}
+.moon-now .name{font-family:var(--display);font-size:1.7rem;line-height:1.1}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center;font-size:.75rem;color:#dcd6e6}
+.week span{display:grid;gap:3px;justify-items:center}
+.week svg{width:22px;height:22px}
+.week b{color:#f6f3ee;font-weight:600}
+.glass-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.glass a.go{background:#ffcf7a;color:#17163a;border-radius:999px;padding:10px 18px;font-weight:600;font-size:.9rem;text-decoration:none}
+.chartbox{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;max-width:560px}
+#chart{display:block;width:100%;height:460px}
 .chartbox figcaption{font-size:.8rem;color:var(--muted);padding:6px 4px 0}
 figure{margin:0}
 
 /* status strip */
 .status{background:var(--deep);color:#eef6f5}
-:root[data-theme="dark"] .status{background:#0a2c36}
 .status .wrap{padding-top:22px;padding-bottom:22px;display:grid;gap:18px}
 .status-head{display:flex;gap:12px 16px;align-items:center;flex-wrap:wrap}
 .status-head h2{font-size:1.3rem;letter-spacing:0;margin-right:auto}
@@ -74,7 +90,6 @@ figure{margin:0}
 .status .pill.ok{color:#8fe0b0}.status .pill.warn{color:#f3cf7a}.status .pill.crit{color:#ffa094}
 .gauges{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.18)}
 .gauge{background:var(--deep);padding:12px 14px}
-:root[data-theme="dark"] .gauge{background:#0a2c36}
 .gauge dt{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75}
 .gauge dd{margin:4px 0 0;font-family:var(--display);font-weight:700;font-size:1.35rem;line-height:1.15;overflow-wrap:anywhere}
 dl{margin:0}
@@ -119,18 +134,14 @@ textarea{min-height:90px;resize:vertical}
 .check{display:flex;gap:8px;align-items:center;font-weight:600;font-size:.95rem}
 .check input{width:18px;height:18px;accent-color:var(--water)}
 button{cursor:pointer;border-radius:5px;border:1.5px solid var(--ink);background:transparent;padding:8px 16px;font-weight:700}
-button.primary{background:var(--buoy);border-color:var(--buoy);color:#fff}
-:root[data-theme="dark"] button.primary{color:#1a0e06}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.primary{color:#1a0e06}}
-a.btn{display:inline-block;border-radius:5px;background:var(--buoy);border:1.5px solid var(--buoy);color:#fff;padding:8px 16px;font-weight:700;text-decoration:none}
-:root[data-theme="dark"] a.btn{color:#1a0e06}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) a.btn{color:#1a0e06}}
+button.primary{background:var(--buoy);border-color:var(--buoy);color:var(--on-accent)}
+a.btn{display:inline-block;border-radius:999px;background:var(--buoy);border:1.5px solid var(--buoy);color:var(--on-accent);padding:8px 16px;font-weight:700;text-decoration:none}
 button.link{border:0;padding:2px 4px;color:var(--water);text-decoration:underline;font-weight:600;font-size:.88rem}
 button:disabled{opacity:.5;cursor:not-allowed}
 .status button{border-color:#eef6f5;color:#eef6f5}
 .status .panel{color:var(--ink)}
 .status .panel button{border-color:var(--ink);color:var(--ink)}
-.status .panel button.primary{border-color:var(--buoy);color:#fff}
+.status .panel button.primary{border-color:var(--buoy);color:var(--on-accent)}
 .row{display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center}
 .msg{font-size:.92rem;font-weight:600}
 .msg.err{color:var(--crit)}.msg.good{color:var(--ok)}
@@ -149,9 +160,48 @@ td.note{max-width:260px;overflow-wrap:anywhere}
 .report p{overflow-wrap:anywhere;white-space:pre-wrap}
 footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);font-size:.9rem}
 [hidden]{display:none!important}
-@media (max-width:800px){
-  .hero .wrap{grid-template-columns:1fr}
-  #chart{height:420px}
+/* Living Window finish */
+button{border-radius:999px;padding:10px 20px;min-height:44px}
+button.link{min-height:0;border-radius:4px}
+.panel,.card,.empty{border-radius:16px}
+.callout{border-radius:12px}
+input[type=text],input[type=number],input[type=date],input[type=email],input[type=file],select,textarea{border-radius:10px;min-height:44px;width:100%;background:var(--paper);border:1.5px solid var(--line);padding:9px 10px}
+.status{border-top:1px solid rgba(255,255,255,.14)}
+.stew-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,560px);gap:28px;align-items:start}
+.stew-top .specs{grid-template-columns:1fr}
+/* fishing calendar */
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.cal div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 6px;display:grid;gap:5px;justify-items:center;text-align:center}
+.cal div.today{border-color:var(--buoy);border-width:2px}
+.cal .d{font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cal svg{width:40px;height:40px}
+.cal .o{font-family:var(--display);font-size:1.3rem;line-height:1}
+.cal .p{font-size:.74rem;color:var(--muted)}
+/* gallery */
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.gal figure{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:grid}
+.gal .shot{display:block;padding:0;border:0;border-radius:0;min-height:0;background:var(--line);cursor:zoom-in;aspect-ratio:4/3;width:100%}
+.gal .shot img{width:100%;height:100%;object-fit:cover;display:block}
+.gal figcaption{padding:10px 12px 12px;display:grid;gap:4px;font-size:.92rem}
+.gal figcaption .meta{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:.8rem;color:var(--muted)}
+.gal .empty{grid-column:1/-1}
+dialog#lightbox{border:0;border-radius:16px;padding:14px;background:var(--surface);color:var(--ink);max-width:min(94vw,1100px)}
+dialog#lightbox::backdrop{background:rgba(5,6,26,.82)}
+dialog#lightbox img{max-width:100%;max-height:76vh;display:block;border-radius:10px;margin:0 auto}
+dialog#lightbox .row{justify-content:space-between;margin-top:10px}
+/* neighbor board */
+.post{padding:16px 0;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.post .meta{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;font-size:.84rem;color:var(--muted)}
+.post p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:1.05rem}
+.replies{display:grid;gap:10px;margin-left:18px;padding-left:16px;border-left:2px solid var(--line)}
+.replies p{font-size:.98rem}
+.reply-form{display:flex;gap:8px;flex-wrap:wrap}
+.reply-form input{flex:1 1 220px;width:auto}
+@media (max-width:900px){
+  .hero-grid{grid-template-columns:1fr;padding-top:150px;min-height:0}
+  .stew-top{grid-template-columns:1fr}
+  .cal{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #chart{height:400px}
   section.block{padding:44px 0}
 }
 </style>
@@ -163,29 +213,45 @@ footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);f
     <a class="brand" href="#top">Taylor Lake Estates</a>
     <nav aria-label="Sections">
       <a href="#lake-status">Lake status</a>
-      <a href="#stewardship">Stewardship</a>
       <a href="#fishing">Fishing</a>
+      <a href="#gallery">Gallery</a>
       <a href="#wildlife">Wildlife</a>
+      <a href="#board">Neighbor board</a>
       <a href="#rules">Rules</a>
       <a href="#dues" id="nav-dues" hidden>Dues</a>
-      <a href="#report">Report a problem</a>
-      <a href="#account" id="nav-account">Sign in</a>
+      <a href="#report">Report</a>
+      <a href="#account" id="nav-account" class="pill-link">Sign in</a>
     </nav>
   </div>
 </header>
 
 <main id="top">
 <div class="hero">
-  <div class="wrap">
-    <div>
-      <p class="kicker">Lake association</p>
-      <h1>Four and a half acres we all look after.</h1>
-      <p class="lede">The neighborhood's place to check water conditions, read the stewardship guidelines, log a catch, and tell the lake manager when something needs attention.</p>
+  <div class="scene" id="scene" aria-hidden="true"></div>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="kicker" id="hero-kicker">Lake association</p>
+      <h1 id="hero-title">Taylor Lake.</h1>
+      <p class="lede">The view from the dock, any hour. The weather over the water, tonight&rsquo;s moon, and what the neighbors are catching.</p>
     </div>
-    <figure class="chartbox">
-      <canvas id="chart" role="img" aria-label="Map of the lake traced from satellite imagery: a long arm reaching west along Taylor Lake Drive, a main body running south, and a small cove on the east side. Depth contours every three feet, deepest at about fifteen feet beside the dam on the northeast bank."></canvas>
-      <figcaption>Shoreline traced from satellite imagery and scaled from the 32-foot street width. Depth contours, in feet, are illustrative and not surveyed.</figcaption>
-    </figure>
+    <div class="hero-cards">
+      <div class="glass" id="wx-card" aria-live="polite">
+        <span class="lab">Weather &middot; Troy 62294</span>
+        <div class="wx-now"><span class="big num" id="wx-temp">&ndash;</span><span id="wx-desc">Checking the sky&hellip;</span></div>
+        <div class="wx-facts"><span>Wind<b id="wx-wind">&ndash;</b></span><span>Rain<b id="wx-rain">&ndash;</b></span><span>Sunset<b id="wx-sunset">&ndash;</b></span></div>
+        <div class="wx-facts" id="wx-days"></div>
+      </div>
+      <div class="glass">
+        <span class="lab">Moon and fishing</span>
+        <div class="moon-now"><span id="moon-big"></span><div><div class="name" id="moon-name"></div><div class="sub" id="moon-sub"></div></div></div>
+        <div class="week" id="moon-week"></div>
+      </div>
+      <div class="glass">
+        <div class="glass-head"><span class="lab">Neighbor board</span><a class="go" href="#board" id="bc-go">Open</a></div>
+        <div id="bc-body">Sign in to read what the neighbors are posting.</div>
+        <div class="sub" id="bc-meta"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -229,12 +295,18 @@ footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);f
       <h2 id="stew-h">The lake, and how to keep it healthy</h2>
       <p>Everything that lands on a lawn or a driveway around here ends up in the same basin. A small lake has little water to dilute it, so what each household does shows up in the water within a season.</p>
     </div>
+    <div class="stew-top">
     <dl class="specs">
       <div><dt>Surface area</dt><dd class="num">~4.6 acres<small>about 200,000 square feet, measured from satellite imagery</small></dd></div>
       <div><dt>Shoreline</dt><dd class="num">~0.8 mile<small>about 4,250 feet around</small></dd></div>
       <div><dt>Maximum depth</dt><dd class="num">~15 ft<small>near the dam</small></dd></div>
       <div><dt>Resident fish</dt><dd class="num">5 groups<small>bass, catfish, carp, sunfish, crappie</small></dd></div>
     </dl>
+    <figure class="chartbox">
+      <canvas id="chart" role="img" aria-label="Map of the lake traced from satellite imagery: a long arm reaching west along Taylor Lake Drive, a main body running south, and a small cove on the east side. Depth contours every three feet, deepest at about fifteen feet beside the dam on the northeast bank."></canvas>
+      <figcaption>Shoreline traced from satellite imagery and scaled from the 32-foot street width. Depth contours, in feet, are illustrative and not surveyed.</figcaption>
+    </figure>
+    </div>
     <div class="two">
       <div class="practice"><h3>Go easy on lawn fertilizer</h3><p>Phosphorus that washes off a lawn feeds algae. Use a phosphorus-free product, apply less than the bag says, and skip it when rain is forecast.</p></div>
       <div class="practice"><h3>Keep clippings and leaves out of the water</h3><p>Grass and leaves rot on the bottom, release nutrients, and use up oxygen fish need. Mulch them on the lawn or bag them, and blow away from the shore.</p></div>
@@ -272,6 +344,12 @@ footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);f
       </ul>
     </div>
 
+    <div class="sec-head">
+      <h3>Fishing calendar</h3>
+      <p class="small muted">Two weeks of moon phases. The outlook follows the moon: fish tend to feed hardest in the days around the full and new moon.</p>
+    </div>
+    <div class="cal" id="fish-cal"></div>
+
     <div class="panel">
       <div class="row" style="justify-content:space-between"><h3>Community catch log</h3>
         <div class="row"><label for="log-filter" class="small">Show</label>
@@ -299,6 +377,27 @@ footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);f
   </div>
 </section>
 
+<section class="block" id="gallery" aria-labelledby="gal-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="gal-h">Photo gallery</h2>
+      <p>Wildlife around the lake and the fish that came out of it. Photos are visible to residents only.</p>
+    </div>
+    <div class="row"><label for="gal-filter" class="small">Show</label>
+      <select id="gal-filter" style="width:auto"><option value="">All photos</option><option value="wildlife">Wildlife</option><option value="catch">Fish catches</option></select></div>
+    <div class="gal" id="gal-grid"><p class="empty">Sign in to see the gallery.</p></div>
+    <form class="panel grid" id="gal-form" hidden>
+      <h3 class="field wide">Add a photo</h3>
+      <div class="field"><label for="g-file">Photo</label><input type="file" id="g-file" accept="image/jpeg,image/png,image/webp" required></div>
+      <div class="field"><label for="g-kind">What is it?</label><select id="g-kind" required><option value="wildlife">Wildlife</option><option value="catch">Fish catch</option></select></div>
+      <div class="field wide"><label for="g-cap">Caption, optional</label><input type="text" id="g-cap" maxlength="140" placeholder="Great blue heron off the north cove"></div>
+      <div class="field wide row"><button class="primary" type="submit" id="g-save">Add to the gallery</button><span class="msg" id="g-msg" role="status"></span></div>
+      <p class="field wide small muted">Only post photos you took. Leave out people who have not agreed to be pictured.</p>
+    </form>
+  </div>
+</section>
+<dialog id="lightbox" aria-label="Photo"><img id="lb-img" alt=""><div class="row"><span id="lb-cap"></span><button type="button" id="lb-close">Close</button></div></dialog>
+
 <section class="block" id="wildlife" aria-labelledby="wild-h">
   <div class="wrap">
     <div class="sec-head">
@@ -316,6 +415,24 @@ footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);f
       <article class="card"><h3>Crawfish</h3><p class="sci">Family <span lang="la">Cambaridae</span></p><p>Under rocks in the shallows, and the builders of the small mud chimneys you see on wet ground near shore. Food for bass, raccoons, and herons.</p><span class="tag ok">Harmless</span></article>
       <article class="card"><h3>Native snakes</h3><p class="sci">Watersnakes and garter snakes</p><p>Most snakes near the water are non-venomous and eat fish, frogs, and rodents. Any snake may bite if grabbed. Step back and it will leave.</p><span class="tag warn">Leave it alone</span></article>
     </div>
+  </div>
+</section>
+
+<section class="block" id="board" aria-labelledby="board-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="board-h">Neighbor board</h2>
+      <p>Lake notes, lost and found, things for sale or free. Posts are visible to residents only.</p>
+    </div>
+    <div class="row"><label for="board-filter" class="small">Show</label>
+      <select id="board-filter" style="width:auto"><option value="">Everything</option><option>General</option><option>Lake notes</option><option>Lost and found</option><option>For sale or free</option></select></div>
+    <div id="board-list"><p class="empty">Sign in to read the board.</p></div>
+    <form class="panel grid" id="board-form" hidden>
+      <h3 class="field wide">Post a message</h3>
+      <div class="field"><label for="b-cat">Category</label><select id="b-cat"><option>General</option><option>Lake notes</option><option>Lost and found</option><option>For sale or free</option></select></div>
+      <div class="field wide"><label for="b-body">Message</label><textarea id="b-body" maxlength="1000" required></textarea></div>
+      <div class="field wide row"><button class="primary" type="submit" id="b-save">Post to the board</button><span class="msg" id="b-msg" role="status"></span></div>
+    </form>
   </div>
 </section>
 
@@ -410,7 +527,7 @@ footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);f
   <div class="wrap">
     <div class="sec-head">
       <h2 id="acct-h">Resident accounts</h2>
-      <p id="acct-intro">The catch log, problem reports, and dues are for people who live in Taylor Lake Estates. Sign in with the link we email you. No password needed.</p>
+      <p id="acct-intro">The catch log, photo gallery, neighbor board, problem reports, and dues are for people who live in Taylor Lake Estates. Sign in with the link we email you. No password needed.</p>
     </div>
     <div class="panel" id="acct-in" hidden>
       <div class="row" style="justify-content:space-between"><p id="acct-who"></p><button type="button" id="signout">Sign out</button></div>
@@ -481,36 +598,177 @@ function drawChart(){
     g.fillStyle=mix(shallow,deep,i/n);
     g.strokeStyle=i?mix(shallow,deep,Math.min(1,i/n+.25)):ink; g.lineWidth=i?1:1.6; g.lineJoin="round";
     L.p.forEach(p=>{g.beginPath();for(let j=0;j<p.length;j+=2){j?g.lineTo(X(p[j]),Y(p[j+1])):g.moveTo(X(p[j]),Y(p[j+1]));}g.closePath();g.fill();g.stroke();});});
-  const lab=(t,x,y,rot,col,font,al)=>{g.save();g.translate(X(x),Y(y));g.rotate(rot||0);g.fillStyle=col;g.font=font||"600 11px Figtree, system-ui, sans-serif";g.textAlign=al||"center";g.textBaseline="middle";g.fillText(t,0,0);g.restore();};
+  const lab=(t,x,y,rot,col,font,al)=>{g.save();g.translate(X(x),Y(y));g.rotate(rot||0);g.fillStyle=col;g.font=font||"600 11px DM Sans, system-ui, sans-serif";g.textAlign=al||"center";g.textBaseline="middle";g.fillText(t,0,0);g.restore();};
   /* dam, assumed on the straight northeast bank */
   g.strokeStyle=ink; g.lineWidth=5; g.lineCap="butt"; g.beginPath(); g.moveTo(X(503),Y(58)); g.lineTo(X(585),Y(155)); g.stroke();
-  lab("D A M",560,92,Math.atan2(97,82),ink,"700 11px Figtree, system-ui, sans-serif");
+  lab("D A M",560,92,Math.atan2(97,82),ink,"700 11px DM Sans, system-ui, sans-serif");
   const dx=X(LAKE.deep[0]),dy=Y(LAKE.deep[1]);
   g.strokeStyle=buoy; g.lineWidth=2; g.beginPath(); g.moveTo(dx-6,dy);g.lineTo(dx+6,dy);g.moveTo(dx,dy-6);g.lineTo(dx,dy+6);g.stroke();
-  lab("\u224815 ft",LAKE.deep[0]+14,LAKE.deep[1]+26,0,"#e9f4f3","700 12px Figtree, system-ui, sans-serif");
+  lab("\u224815 ft",LAKE.deep[0]+14,LAKE.deep[1]+26,0,"#e9f4f3","700 12px DM Sans, system-ui, sans-serif");
   lab("Taylor Lake Dr",165,170,-0.62,muted);
   lab("Old Homestead Dr",215,520,Math.PI/2*-1+0.12,muted);
   lab("Lake Terrace Ct",430,690,-0.95,muted);
   /* scale bar: 200 ft at 1.53 ft per traced pixel (32 ft street = ~21 px) */
   const sx=X(470),sy=Y(735),sl=200/1.53*k; g.strokeStyle=ink; g.lineWidth=1.5;
   g.beginPath(); g.moveTo(sx,sy-4); g.lineTo(sx,sy); g.lineTo(sx+sl,sy); g.lineTo(sx+sl,sy-4); g.stroke();
-  g.fillStyle=ink; g.font="700 11px Figtree, system-ui, sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText("200 ft",sx+sl/2,sy-10);
+  g.fillStyle=ink; g.font="700 11px DM Sans, system-ui, sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText("200 ft",sx+sl/2,sy-10);
   /* north arrow */
   const nx=X(110),ny=Y(690); g.strokeStyle=ink; g.fillStyle=ink; g.lineWidth=1.5;
   g.beginPath(); g.moveTo(nx,ny+18); g.lineTo(nx,ny-14); g.stroke();
   g.beginPath(); g.moveTo(nx,ny-22); g.lineTo(nx-5,ny-10); g.lineTo(nx+5,ny-10); g.closePath(); g.fill();
-  g.font="700 11px Figtree, system-ui, sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText("N",nx,ny+28);
+  g.font="700 11px DM Sans, system-ui, sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText("N",nx,ny+28);
 }
 drawChart();
 if(window.ResizeObserver)new ResizeObserver(drawChart).observe(canvas);
-new MutationObserver(drawChart).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+new MutationObserver(drawChart).observe(document.documentElement,{attributes:true,attributeFilter:["data-phase"]});
 if(window.matchMedia)matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",drawChart);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawChart);
+
+/* ---------- the lake's clock: sun, moon, phase of day ---------- */
+const LAT=38.729,LON=-89.883,TZ="America/Chicago",SYN=29.530588853,NEWMOON=Date.UTC(2000,0,6,18,14);
+function lakeNow(d){
+  const o={};new Intl.DateTimeFormat("en-US",{timeZone:TZ,hour12:false,year:"numeric",month:"numeric",day:"numeric",hour:"numeric",minute:"numeric",weekday:"long"}).formatToParts(d||new Date()).forEach(p=>o[p.type]=p.value);
+  return {y:+o.year,m:+o.month,d:+o.day,min:((+o.hour)%24)*60+(+o.minute),weekday:o.weekday};
+}
+function sunTimes(now){                       /* sunrise and sunset, minutes after local midnight */
+  const n=lakeNow(now),doy=Math.round((Date.UTC(n.y,n.m-1,n.d)-Date.UTC(n.y,0,0))/864e5),g=2*Math.PI/365*(doy-1),r=Math.PI/180;
+  const eq=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g));
+  const dec=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g)-0.002697*Math.cos(3*g)+0.00148*Math.sin(3*g);
+  const ha=Math.acos(Math.cos(90.833*r)/(Math.cos(LAT*r)*Math.cos(dec))-Math.tan(LAT*r)*Math.tan(dec))/r;
+  const u=now||new Date(),utcMin=u.getUTCHours()*60+u.getUTCMinutes();let off=n.min-utcMin;if(off>720)off-=1440;if(off<-720)off+=1440;
+  return {rise:720-4*(LON+ha)-eq+off,set:720-4*(LON-ha)-eq+off};
+}
+const clock=m=>{m=Math.round(m);const hh=Math.floor(m/60)%24,mm=m%60;return ((hh+11)%12+1)+":"+String(mm).padStart(2,"0")+(hh<12?" AM":" PM");};
+function dayPhase(now){
+  const q=new URLSearchParams(location.search).get("phase");if(["dawn","day","dusk","night"].includes(q))return q;
+  const t=lakeNow(now).min,s=sunTimes(now);
+  return t<s.rise-40?"night":t<s.rise+40?"dawn":t<s.set-40?"day":t<s.set+50?"dusk":"night";
+}
+const moonPhase=d=>((((d.getTime()-NEWMOON)/864e5)%SYN)+SYN)%SYN/SYN;
+const moonLit=p=>(1-Math.cos(2*Math.PI*p))/2;
+function moonName(p){const a=p*SYN;
+  if(a<1.2||a>SYN-1.2)return "New moon"; if(Math.abs(a-SYN/2)<1.2)return "Full moon";
+  if(Math.abs(a-SYN/4)<1)return "First quarter"; if(Math.abs(a-3*SYN/4)<1)return "Last quarter";
+  return a<SYN/4?"Waxing crescent":a<SYN/2?"Waxing gibbous":a<3*SYN/4?"Waning gibbous":"Waning crescent";}
+function outlook(p){const a=Math.min(Math.abs(p-.5),p,1-p)*SYN;return a<1.6?"Best":a<3.6?"Better":"Good";}
+function moonSVG(cx,cy,r,p,lit,dark,ring,rw){
+  const rx=(Math.abs(Math.cos(2*Math.PI*p))*r).toFixed(1),wax=p<.5,gib=p>.25&&p<.75;
+  const d=wax?`M${cx},${cy-r} A${r},${r} 0 0 1 ${cx},${cy+r} A${rx},${r} 0 0 ${gib?1:0} ${cx},${cy-r} Z`
+             :`M${cx},${cy-r} A${r},${r} 0 0 0 ${cx},${cy+r} A${rx},${r} 0 0 ${gib?0:1} ${cx},${cy-r} Z`;
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${dark}" stroke="${ring}" stroke-width="${rw||1}"></circle><path d="${d}" fill="${lit}"></path>`;
+}
+function nextMoon(target){                      /* next full (0.5) or new (0) moon, as a Date */
+  let t=Date.now();for(let i=0;i<24*31;i++){const p=moonPhase(new Date(t)),dlt=target?Math.abs(p-target):Math.min(p,1-p);if(dlt<0.004)return new Date(t);t+=36e5;}return null;
+}
+const dayAt6pm=i=>{const n=lakeNow();return new Date(Date.UTC(n.y,n.m-1,n.d+i,24));};   /* about 6 PM Central */
+const wk=d=>new Intl.DateTimeFormat("en-US",{timeZone:TZ,weekday:"short"}).format(d);
+const md=d=>new Intl.DateTimeFormat("en-US",{timeZone:TZ,month:"short",day:"numeric"}).format(d);
+
+/* ---------- the scene ---------- */
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const PAL={
+ night:{sky:[[0,"#050920"],[.5,"#0d163e"],[.85,"#182252"],[1,"#232f66"]],water:[[0,"#1e2a5c"],[.3,"#131b44"],[1,"#04061a"]],far:"#0a0e2a",house:"#0a0e2a",win:"#ffd98a",near:"#04051a",dock:"#070818",plank:"#1c2046",stars:120,moon:1,rip:.09,boat:"#070818",reed:"#04051a"},
+ dusk:{sky:[[0,"#10163a"],[.5,"#3b3468"],[.8,"#a35a6e"],[.94,"#e7915c"],[1,"#f8cf86"]],water:[[0,"#d99a6a"],[.1,"#8c5273"],[.38,"#352f60"],[1,"#0c0f2a"]],far:"#262048",house:"#1c1838",win:"#ffd98a",near:"#0b0a1c",dock:"#0d0b20",plank:"#2c2756",stars:70,moon:1,rip:.12,boat:"#0d0b20",reed:"#0b0a1c"},
+ dawn:{sky:[[0,"#232e68"],[.5,"#64568f"],[.8,"#d98f92"],[.94,"#f6c08f"],[1,"#fde3b0"]],water:[[0,"#eab58e"],[.12,"#a67392"],[.4,"#4b4676"],[1,"#191d44"]],far:"#2b2850",house:"#232046",win:"#ffd98a",near:"#12102c",dock:"#15132c",plank:"#35315c",stars:16,moon:0,sun:[770,516,44,"#ffeab4"],rip:.12,boat:"#15132c",reed:"#12102c"},
+ day:{sky:[[0,"#2460a8"],[.5,"#4f90cc"],[.85,"#9ac6e8"],[1,"#d3eaf6"]],water:[[0,"#b4d6ea"],[.15,"#6ea9d6"],[.5,"#3273b2"],[1,"#18457c"]],far:"#3c7a52",house:"#f1e9d8",roof:"#8a5a44",win:null,near:"#1b4a2f",dock:"#6b5138",plank:"#8f7050",stars:0,moon:0,sun:[850,170,46,"#fff6cf"],rip:.24,boat:"#c9541e",reed:"#3a2c1c",clouds:4},
+ grey:{sky:[[0,"#5f7386"],[.5,"#8799a8"],[1,"#c3ced6"]],water:[[0,"#b2bfc8"],[.3,"#7c8f9d"],[1,"#3a4a58"]]}
+};
+function buildScene(phase,wx){
+  const P=Object.assign({},PAL[phase]),R=rng(7),ri=(a,b)=>Math.floor(a+R()*(b-a+1));
+  const wet=wx==="rain"||wx==="snow",dull=wet||wx==="cloud";
+  if(dull&&(phase==="day"||phase==="dawn")){P.sky=PAL.grey.sky;P.water=PAL.grey.water;P.sun=null;P.clouds=7;}
+  if(dull){P.stars=0;if(wet)P.moon=0;}
+  const grad=(id,st)=>`<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">${st.map(s=>`<stop offset="${s[0]}" stop-color="${s[1]}"></stop>`).join("")}</linearGradient>`;
+  let o=`<svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMin slice" xmlns="http://www.w3.org/2000/svg"><defs>${grad("skyG",P.sky)}${grad("watG",P.water)}</defs><rect width="1440" height="522" fill="url(#skyG)"></rect>`;
+  for(let i=0;i<120;i++){const x=ri(0,1440),y=ri(10,300),r=[.8,1,1.3][ri(0,2)],op=[.35,.55,.8][ri(0,2)];if(i<P.stars)o+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity="${op}"></circle>`;}
+  if(P.sun)o+=`<circle cx="${P.sun[0]}" cy="${P.sun[1]}" r="${P.sun[2]*2.1}" fill="${P.sun[3]}" opacity=".18"></circle><circle cx="${P.sun[0]}" cy="${P.sun[1]}" r="${P.sun[2]}" fill="${P.sun[3]}"></circle>`;
+  const mp=moonPhase(new Date()),mx=820,my=190;
+  if(P.moon)o+=`<circle cx="${mx}" cy="${my}" r="58" fill="#fdf3d0" opacity=".08"></circle>`+moonSVG(mx,my,34,mp,"#fdf3d0",phase==="night"?"#17214e":"#3a3468","rgba(255,255,255,.25)",1);
+  const cl=P.clouds||0,cc=dull?"#dfe6ea":"#ffffff";
+  for(let i=0;i<cl;i++){const x=ri(540,960),y=ri(110,330),w=ri(120,220);o+=`<g fill="${cc}" opacity="${dull?.75:.9}"><ellipse cx="${x}" cy="${y}" rx="${w/2}" ry="18"></ellipse><ellipse cx="${x-w*.18}" cy="${y-14}" rx="${w*.24}" ry="20"></ellipse><ellipse cx="${x+w*.14}" cy="${y-20}" rx="${w*.28}" ry="26"></ellipse></g>`;}
+  o+=`<rect y="520" width="1440" height="380" fill="url(#watG)"></rect><g fill="${P.far}">`;
+  for(let x=-10;x<1460;x+=ri(14,26)){const r=ri(11,26);o+=`<circle cx="${x}" cy="${Math.round(520-r*.45)}" r="${r}"></circle>`;}
+  o+=`<rect y="512" width="1440" height="12"></rect></g>`;
+  [[250,46,26],[430,54,30],[1010,50,28],[1190,44,24],[640,40,22]].forEach(q=>{const x=q[0],w=q[1],hh=q[2],y=514-hh;
+    o+=`<rect x="${x}" y="${y}" width="${w}" height="${hh}" fill="${P.house}"></rect><path d="M${x-5},${y} L${x+w/2},${y-16} L${x+w+5},${y} Z" fill="${P.roof||P.house}"></path>`;
+    const wc=P.win||"#7d8fa3";o+=`<rect x="${x+8}" y="${y+8}" width="7" height="8" fill="${wc}"></rect><rect x="${x+w-16}" y="${y+8}" width="7" height="8" fill="${wc}"></rect>`;
+    if(P.win)o+=`<rect x="${x+8}" y="528" width="7" height="14" fill="${wc}" opacity=".35"></rect><rect x="${x+w-16}" y="528" width="7" height="14" fill="${wc}" opacity=".35"></rect>`;});
+  const lx=P.moon?mx:(P.sun?P.sun[0]:null),lc=P.moon?"#fdf3d0":(P.sun?P.sun[3]:"#fff");
+  for(let y=540;y<830;y+=ri(9,15)){const w=ri(18,34)+(y-540)*.16,dx=ri(-8,8);if(lx!==null)o+=`<rect x="${Math.round(lx-w/2+dx)}" y="${y}" width="${Math.round(w)}" height="3" rx="1.5" fill="${lc}" opacity="${Math.max(.18,.75-(y-540)/420).toFixed(2)}"></rect>`;}
+  for(let i=0;i<60;i++){const x=ri(0,1400),y=ri(545,890),w=ri(30,120);o+=`<line x1="${x}" y1="${y}" x2="${x+w}" y2="${y}" stroke="#fff" stroke-width="1" opacity="${(P.rip*(.5+R())).toFixed(2)}"></line>`;}
+  o+=`<g fill="${P.boat}"><ellipse cx="700" cy="604" rx="44" ry="5"></ellipse><circle cx="700" cy="586" r="5" fill="${phase==="day"?"#2b2b3a":P.boat}"></circle><path d="M694,604 L696,592 L704,592 L706,604 Z" fill="${phase==="day"?"#2b2b3a":P.boat}"></path></g><line x1="678" y1="584" x2="724" y2="606" stroke="${phase==="day"?"#2b2b3a":P.boat}" stroke-width="2"></line>`;
+  o+=`<g fill="${P.near}">`;for(let i=0;i<9;i++)o+=`<circle cx="${ri(1180,1460)}" cy="${ri(800,920)}" r="${ri(40,80)}"></circle>`;o+=`</g>`;
+  [1085,1120,1150,1190,1235].forEach(cx=>{const top=ri(640,720),lean=ri(-14,14);o+=`<path d="M${cx},900 Q${cx+lean/2},${(900+top)/2} ${cx+lean},${top}" stroke="${P.reed}" stroke-width="3" fill="none"></path><rect x="${cx+lean-5}" y="${top-34}" width="10" height="36" rx="5" fill="${P.reed}"></rect>`;});
+  o+=`<path d="M70,900 L390,900 L500,632 L440,632 Z" fill="${P.dock}"></path>`;
+  for(let i=1;i<10;i++){const t=i/10;o+=`<line x1="${Math.round(70+370*t)}" y1="${Math.round(900-268*t)}" x2="${Math.round(390+110*t)}" y2="${Math.round(900-268*t)}" stroke="${P.plank}" stroke-width="${(2.4-1.6*t).toFixed(1)}"></line>`;}
+  o+=`<rect x="424" y="600" width="9" height="80" fill="${P.dock}"></rect><rect x="497" y="600" width="9" height="80" fill="${P.dock}"></rect><rect x="286" y="700" width="12" height="130" fill="${P.dock}"></rect>`;
+  if(wx==="rain")for(let i=0;i<140;i++){const x=ri(0,1440),y=ri(0,880);o+=`<line x1="${x}" y1="${y}" x2="${x-8}" y2="${y+22}" stroke="#dfe9f2" stroke-width="1.2" opacity=".45"></line>`;}
+  if(wx==="snow")for(let i=0;i<160;i++)o+=`<circle cx="${ri(0,1440)}" cy="${ri(0,890)}" r="${[1.5,2,3][ri(0,2)]}" fill="#fff" opacity=".8"></circle>`;
+  return o+"</svg>";
+}
+
+/* ---------- weather (Open-Meteo, no key) ---------- */
+const WX={temp:null,code:null,kind:null};
+const WMO=c=>c===0?"Clear":c===1?"Mostly clear":c===2?"Partly cloudy":c===3?"Overcast":c<=48?"Fog":c<=57?"Drizzle":c<=67?"Rain":c<=77?"Snow":c<=82?"Rain showers":c<=86?"Snow showers":"Thunderstorms";
+const wxKind=c=>{const q=new URLSearchParams(location.search).get("wx");if(["rain","snow","cloud","clear"].includes(q))return q==="clear"?null:q;
+  if(c==null)return null;return (c>=71&&c<=77)||c===85||c===86?"snow":(c>=51&&c<=67)||(c>=80&&c<=82)||c>=95?"rain":c===3||c===45||c===48?"cloud":null;};
+const compass=d=>["N","NE","E","SE","S","SW","W","NW"][Math.round(d/45)%8];
+function renderWeather(j){
+  const c=j&&j.current,d=j&&j.daily;
+  if(!c||typeof c.temperature_2m!=="number"){$("#wx-desc").textContent="Weather is unavailable right now.";$("#wx-sunset").textContent=clock(sunTimes().set);return;}
+  WX.code=c.weather_code;WX.kind=wxKind(c.weather_code);
+  $("#wx-temp").textContent=Math.round(c.temperature_2m)+"°";
+  $("#wx-desc").textContent=WMO(c.weather_code);
+  $("#wx-wind").textContent=typeof c.wind_speed_10m==="number"?Math.round(c.wind_speed_10m)+" mph "+compass(c.wind_direction_10m||0):"–";
+  const pr=d&&d.precipitation_probability_max&&d.precipitation_probability_max[0];
+  $("#wx-rain").textContent=typeof pr==="number"?pr+"%":"–";
+  $("#wx-sunset").textContent=clock(sunTimes().set);
+  const box=$("#wx-days");box.replaceChildren();
+  if(d&&Array.isArray(d.time))for(let i=1;i<Math.min(4,d.time.length);i++){
+    const dt=new Date(d.time[i]+"T18:00:00Z"),hi=d.temperature_2m_max&&d.temperature_2m_max[i],lo=d.temperature_2m_min&&d.temperature_2m_min[i];
+    box.append(h("span",null,new Intl.DateTimeFormat("en-US",{timeZone:"UTC",weekday:"short"}).format(dt),h("b",null,typeof hi==="number"?Math.round(hi)+"° / "+Math.round(lo)+"°":"–")));}
+  paintHero();
+}
+async function loadWeather(){
+  const KEY="tle-wx";
+  try{const c=JSON.parse(localStorage.getItem(KEY)||"null");if(c&&Date.now()-c.t<15*6e4){renderWeather(c.j);return;}}catch(e){}
+  try{
+    const u="https://api.open-meteo.com/v1/forecast?latitude="+LAT+"&longitude="+LON+"&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago&forecast_days=4";
+    const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();
+    try{localStorage.setItem(KEY,JSON.stringify({t:Date.now(),j}));}catch(e){}
+    renderWeather(j);
+  }catch(e){renderWeather(null);}
+}
+
+/* ---------- hero paint: scene, headline, moon ---------- */
+let PHASE=null,WXK;
+function paintHero(){
+  const now=new Date(),ph=dayPhase(now),n=lakeNow(now),kind=wxKind(WX.code);
+  if(ph!==PHASE||kind!==WXK){PHASE=ph;WXK=kind;document.documentElement.setAttribute("data-phase",ph);$("#scene").innerHTML=buildScene(ph,kind);}
+  const word=ph==="night"?"Night":ph==="dusk"?"Evening":n.min<720?"Morning":"Afternoon";
+  $("#hero-title").textContent=word+" on Taylor Lake.";
+  const label={dawn:"First light",day:n.min<720?"Morning":"Afternoon",dusk:"Blue hour",night:"After dark"}[ph];
+  const st=(typeof S!=="undefined"&&S.status)?({ok:"The lake is open",warn:"Lake advisory in effect",crit:"The lake is closed"}[S.status.condition]||""):"";
+  $("#hero-kicker").textContent=[n.weekday,label,st].filter(Boolean).join(" · ");
+}
+function paintMoon(){
+  const p=moonPhase(new Date()),lit=Math.round(moonLit(p)*100);
+  $("#moon-big").innerHTML=`<svg viewBox="0 0 72 72" role="img" aria-label="${moonName(p)}, ${lit} percent lit">${moonSVG(36,36,32,p,"#fdf3d0","#2a2550","#8f88b8",1.5)}</svg>`;
+  $("#moon-name").textContent=moonName(p);
+  const full=nextMoon(.5),nw=nextMoon(0),nxt=full&&nw?(full<nw?["Full moon",full]:["New moon",nw]):null;
+  $("#moon-sub").textContent=lit+"% lit."+(nxt?" "+nxt[0]+" "+(nxt[1]-Date.now()<6*864e5?new Intl.DateTimeFormat("en-US",{timeZone:TZ,weekday:"long"}).format(nxt[1]):md(nxt[1]))+".":"");
+  const cell=(i,big)=>{const d=dayAt6pm(i),q=moonPhase(d);return {d,q,svg:`<svg viewBox="0 0 24 24" aria-hidden="true">${moonSVG(12,12,10,q,big?"#f3d98a":"#fdf3d0",big?"#17163a":"#2a2550",big?"#8a86a8":"#8f88b8",1)}</svg>`};};
+  const wkBox=$("#moon-week");wkBox.replaceChildren();
+  for(let i=0;i<7;i++){const c=cell(i),sp=h("span",null,wk(c.d));sp.insertAdjacentHTML("beforeend",c.svg);sp.append(h("b",null,outlook(c.q)));wkBox.append(sp);}
+  const cal=$("#fish-cal");cal.replaceChildren();
+  for(let i=0;i<14;i++){const c=cell(i,true),dv=h("div",i?null:{class:"today"},h("span",{class:"d"},wk(c.d)+" "+md(c.d).split(" ")[1]));
+    dv.insertAdjacentHTML("beforeend",c.svg);dv.append(h("span",{class:"o"},outlook(c.q)),h("span",{class:"p"},moonName(c.q)));cal.append(dv);}
+}
 
 /* ---------- data: Supabase ---------- */
 const SB_URL="https://rfynqrfylvbqttqarkpl.supabase.co",SB_KEY="sb_publishable_nyTpfrasZU2ZNiacogHrtw_qiln7wfE";
 const sb=window.supabase&&window.supabase.createClient?window.supabase.createClient(SB_URL,SB_KEY):null;
-const S={me:null,profile:null,status:null,catches:[],reports:[],dues:[],duesCfg:null,people:{},requests:[],busy:{}};
+const S={me:null,profile:null,status:null,catches:[],reports:[],dues:[],duesCfg:null,people:{},requests:[],board:[],photos:[],urls:{},busy:{}};
 const COND={ok:"Open",warn:"Advisory",crit:"Closed"};
 const LINK_RE=/^https:\/\/buy\.stripe\.com\/[A-Za-z0-9_\/-]+$/;
 const isRes=()=>!!(S.profile&&S.profile.active);
@@ -544,6 +802,7 @@ function renderStatus(){
   $("#st-upcoming").replaceChildren(...up.map(x=>h("li",null,x)));$("#st-upcoming-box").hidden=!up.length;
   const t=new Date(d.updated_at);
   $("#st-updated").textContent=isNaN(t)?"":"Updated "+t.toLocaleDateString(undefined,{month:"long",day:"numeric",year:"numeric"});
+  if(typeof paintHero==="function")paintHero();
 }
 async function loadStatus(){
   const {data,error}=await sb.from("lake_status").select("condition,clarity,surface_temp,water_level,notice,upcoming,updated_at").eq("id",1).maybeSingle();
@@ -717,6 +976,117 @@ $("#ds-form").addEventListener("submit",async ev=>{
   if(error){fail("#ds-msg",error);return;} say("#ds-msg","");$("#ds-form").hidden=true;loadDues();
 });
 
+/* ---------- neighbor board ---------- */
+function ago(t){const s=(Date.now()-new Date(t))/1000;return s<90?"just now":s<3600?Math.round(s/60)+" min ago":s<86400?Math.round(s/3600)+" hr ago":s<7*86400?Math.round(s/86400)+" days ago":day(t);}
+function renderBoard(){
+  const res=isRes();$("#board-form").hidden=!res;
+  const tops=S.board.filter(p=>!p.parent_id),bc=$("#bc-body"),bm=$("#bc-meta");
+  if(!res){bc.textContent=S.me?"Your account is not active.":"Sign in to read what the neighbors are posting.";bm.textContent="";$("#bc-go").textContent=S.me?"Open":"Sign in";$("#bc-go").setAttribute("href",S.me?"#board":"#account");
+    $("#board-list").replaceChildren(h("p",{class:"empty"},"Sign in to read the board."));return;}
+  $("#bc-go").textContent="Post";$("#bc-go").setAttribute("href","#board");
+  if(tops.length){const t=tops[0];bc.textContent=t.body.length>130?t.body.slice(0,127)+"…":t.body;bm.textContent=who(t.user_id)+" · "+ago(t.created_at)+" · "+t.category;}
+  else{bc.textContent="Nothing posted yet. Start the board.";bm.textContent="";}
+  const f=$("#board-filter").value,rows=f?tops.filter(p=>p.category===f):tops,box=$("#board-list");
+  if(!rows.length){box.replaceChildren(h("p",{class:"empty"},tops.length?"Nothing in that category yet.":"No posts yet. Be the first."));return;}
+  const canDel=p=>p.user_id===S.me.id||isMgr();
+  box.replaceChildren(...rows.slice(0,100).map(p=>{
+    const reps=S.board.filter(r=>r.parent_id===p.id).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    const inp=h("input",{type:"text",maxlength:"1000","aria-label":"Reply to this post",placeholder:"Write a reply"});
+    const form=h("form",{class:"reply-form",onsubmit:ev=>{ev.preventDefault();addPost(inp.value,p.category,p.id,inp);}},inp,h("button",{type:"submit"},"Reply"));
+    return h("div",{class:"post"},
+      h("div",{class:"meta"},h("span",{class:"tag ok"},p.category),h("strong",null,who(p.user_id)),h("span",null,ago(p.created_at)),canDel(p)?h("button",{class:"link",type:"button",onclick:()=>delPost(p)},"Remove"):null),
+      h("p",null,p.body),
+      reps.length?h("div",{class:"replies"},...reps.map(r=>h("div",null,h("div",{class:"meta"},h("strong",null,who(r.user_id)),h("span",null,ago(r.created_at)),canDel(r)?h("button",{class:"link",type:"button",onclick:()=>delPost(r)},"Remove"):null),h("p",null,r.body)))):null,
+      form);}));
+}
+async function loadBoard(){
+  if(!isRes()){S.board=[];renderBoard();return;}
+  const {data,error}=await sb.from("board_posts").select("id,user_id,parent_id,category,body,created_at").order("created_at",{ascending:false}).limit(400);
+  if(!error)S.board=data||[];renderBoard();
+}
+async function addPost(text,category,parent,inp){
+  const body=(text||"").trim().slice(0,1000);if(!body||!isRes()||S.busy.b)return;
+  S.busy.b=true;if(!parent){$("#b-save").disabled=true;say("#b-msg","Posting…");}
+  const {error}=await sb.from("board_posts").insert({body,category,parent_id:parent||null});
+  S.busy.b=false;$("#b-save").disabled=false;
+  if(error){fail("#b-msg",error);return;}
+  if(inp)inp.value="";else{$("#b-body").value="";say("#b-msg","Posted.","good");}
+  loadBoard();
+}
+async function delPost(p){
+  if(S.busy.b)return;S.busy.b=true;const {error}=await sb.from("board_posts").delete().eq("id",p.id);S.busy.b=false;
+  if(error){fail("#b-msg",error);return;} loadBoard();
+}
+$("#board-filter").addEventListener("change",renderBoard);
+$("#board-form").addEventListener("submit",ev=>{ev.preventDefault();addPost($("#b-body").value,$("#b-cat").value,null,null);});
+
+/* ---------- photo gallery ---------- */
+function renderGallery(){
+  const res=isRes(),box=$("#gal-grid");$("#gal-form").hidden=!res;
+  if(!res){box.replaceChildren(h("p",{class:"empty"},S.me?"Your account is not active.":"Sign in to see the gallery."));return;}
+  const f=$("#gal-filter").value,rows=f?S.photos.filter(p=>p.kind===f):S.photos;
+  if(!rows.length){box.replaceChildren(h("p",{class:"empty"},S.photos.length?"No photos of that kind yet.":"No photos yet. Add the first one below."));return;}
+  box.replaceChildren(...rows.map(p=>{
+    const alt=p.caption||(p.kind==="catch"?"Fish catch":"Wildlife")+" photo",url=S.urls[p.storage_path];
+    const shot=h("button",{class:"shot",type:"button","aria-label":"Open photo: "+alt,onclick:()=>openPhoto(p,alt)},url?h("img",{src:url,alt,loading:"lazy"}):null);
+    return h("figure",null,shot,h("figcaption",null,p.caption?h("span",null,p.caption):null,
+      h("span",{class:"meta"},h("span",null,(p.kind==="catch"?"Catch":"Wildlife")+" · "+who(p.user_id)+" · "+day(p.created_at)),
+        (p.user_id===S.me.id||isMgr())?h("button",{class:"link",type:"button",onclick:()=>delPhoto(p)},"Remove"):null)));}));
+}
+function openPhoto(p,alt){const url=S.urls[p.storage_path];if(!url)return;$("#lb-img").src=url;$("#lb-img").alt=alt;$("#lb-cap").textContent=p.caption||"";const d=$("#lightbox");if(d.showModal)d.showModal();}
+$("#lb-close").addEventListener("click",()=>$("#lightbox").close());
+$("#lightbox").addEventListener("click",ev=>{if(ev.target===$("#lightbox"))$("#lightbox").close();});
+async function loadPhotos(){
+  if(!isRes()){S.photos=[];renderGallery();return;}
+  const {data,error}=await sb.from("photos").select("id,user_id,kind,caption,storage_path,created_at").order("created_at",{ascending:false}).limit(60);
+  if(error){$("#gal-grid").replaceChildren(h("p",{class:"empty"},"The gallery can't be reached right now."));return;}
+  S.photos=data||[];
+  const need=S.photos.map(p=>p.storage_path).filter(x=>!S.urls[x]);
+  if(need.length){const r=await sb.storage.from("photos").createSignedUrls(need,3600);(r.data||[]).forEach(u=>{if(u&&u.signedUrl&&u.path)S.urls[u.path]=u.signedUrl;});}
+  renderGallery();
+}
+async function shrink(file){                    /* resize in the browser before upload: longest side 1600 px */
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url;});
+    const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement("canvas");
+    c.width=Math.max(1,Math.round(img.naturalWidth*k));c.height=Math.max(1,Math.round(img.naturalHeight*k));
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    return await new Promise(ok=>c.toBlob(ok,"image/jpeg",.85));
+  }finally{URL.revokeObjectURL(url);}
+}
+$("#gal-filter").addEventListener("change",renderGallery);
+$("#gal-form").addEventListener("submit",async ev=>{
+  ev.preventDefault();if(!isRes()||S.busy.g)return;
+  const file=$("#g-file").files[0];
+  if(!file){say("#g-msg","Choose a photo first.","err");return;}
+  if(!/^image\//.test(file.type)){say("#g-msg","That file is not a photo. Choose a JPEG, PNG, or WebP image.","err");return;}
+  S.busy.g=true;$("#g-save").disabled=true;say("#g-msg","Uploading…");
+  let path=null;
+  try{
+    let blob=null;try{blob=await shrink(file);}catch(e){}
+    if(!blob){say("#g-msg","That file could not be read as a photo. Try a JPEG or PNG.","err");return;}
+    path=S.me.id+"/"+uidNew()+".jpg";
+    const up=await sb.storage.from("photos").upload(path,blob,{contentType:"image/jpeg",upsert:false});
+    if(up.error){say("#g-msg","The upload did not go through. Check your connection and try again.","err");return;}
+    const {error}=await sb.from("photos").insert({kind:$("#g-kind").value,caption:$("#g-cap").value.trim().slice(0,140),storage_path:path});
+    if(error){await sb.storage.from("photos").remove([path]);fail("#g-msg",error);return;}
+    $("#gal-form").reset();say("#g-msg","Added to the gallery.","good");loadPhotos();
+  }finally{S.busy.g=false;$("#g-save").disabled=false;}
+});
+async function delPhoto(p){
+  if(S.busy.g)return;S.busy.g=true;
+  const {error}=await sb.from("photos").delete().eq("id",p.id);
+  if(!error)await sb.storage.from("photos").remove([p.storage_path]);
+  S.busy.g=false;if(error){fail("#g-msg",error);return;} delete S.urls[p.storage_path];loadPhotos();
+}
+
+/* ---------- start the window ---------- */
+paintHero();paintMoon();loadWeather();
+setInterval(()=>{paintHero();},5*6e4);
+setInterval(()=>{paintMoon();loadWeather();},30*6e4);
+
+
 /* ---------- accounts ---------- */
 function renderAccount(){
   $("#acct-in").hidden=!S.me;$("#acct-out").hidden=!!S.me;
@@ -788,10 +1158,10 @@ async function applySession(session){
   if(uid){const {data}=await sb.from("profiles").select("id,display_name,is_manager,is_lakefront,active").eq("id",uid).maybeSingle();S.profile=data||null;}
   renderStatus();
   await loadPeople();
-  loadCatches();loadReports();loadDues();
+  loadCatches();loadReports();loadDues();loadBoard();loadPhotos();
 }
 if(!sb){
-  $("#st-updated").textContent="The latest readings can't be reached right now.";renderStatus();renderLog();renderReports();renderDues();
+  $("#st-updated").textContent="The latest readings can't be reached right now.";renderStatus();renderLog();renderReports();renderDues();renderBoard();renderGallery();
   ["#si-send","#rq-send"].forEach(s=>$(s).disabled=true);say("#si-msg","Sign-in is unavailable right now. Reload the page to try again.","err");
 }else{
   loadStatus();
