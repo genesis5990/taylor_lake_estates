@@ -2,7 +2,8 @@
 
 Community website for the Taylor Lake Estates lake association: a view from the dock that follows the real time of day and weather, lake status, weather, moon phases and a fishing calendar, catch log, photo gallery, neighbor board, problem reports, and lakefront dues.
 
-- `index.html` is the whole site. It talks to the Supabase project `taylor-lake-estates` using the publishable key.
+- `index.html` is the site. `privacy.html` and `terms.html` are the draft policy pages. `assets/` holds the fonts and the Supabase library, served from this site so no third-party CDN is contacted.
+- `index.html` It talks to the Supabase project `taylor-lake-estates` using the publishable key.
 - `Dockerfile` and `nginx.conf` serve it with nginx on port 8080.
 - `fly.toml` is the Fly.io app config.
 

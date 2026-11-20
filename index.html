@@ -4,9 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Taylor Lake Estates</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/fonts.css">
 <style>
 /* Layout idea: a window onto the lake. The hero is a drawn view from the dock that follows the real time of day and weather; the page palette follows it (light by day, indigo after sunset). */
 :root{
@@ -189,6 +187,34 @@ dialog#lightbox{border:0;border-radius:16px;padding:14px;background:var(--surfac
 dialog#lightbox::backdrop{background:rgba(5,6,26,.82)}
 dialog#lightbox img{max-width:100%;max-height:76vh;display:block;border-radius:10px;margin:0 auto}
 dialog#lightbox .row{justify-content:space-between;margin-top:10px}
+/* votes, messages, hub, notice */
+.vote-form{display:grid;gap:12px}
+.vote-form fieldset{border:0;margin:0;padding:0;display:grid;gap:10px}
+.vote-form legend{padding:0;margin-bottom:8px}
+.check input[type=radio]{width:20px;height:20px;accent-color:var(--water)}
+.bars{display:grid;gap:10px}
+.bar .track{height:10px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:4px}
+.bar .fill{height:100%;background:var(--water);border-radius:999px}
+details summary{cursor:pointer;font-weight:600;padding:6px 0}
+.thread{padding:14px 0;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.bubble{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:10px 14px;display:grid;gap:4px;max-width:640px}
+.bubble.mine{justify-self:end;border-color:var(--water)}
+.bubble .meta{display:flex;gap:10px;font-size:.82rem;color:var(--muted)}
+.bubble p{white-space:pre-wrap;overflow-wrap:anywhere}
+#msg-thread{display:grid;gap:10px}
+.hub{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.hub-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px;display:grid;gap:6px;align-content:start}
+.hub-card .lab{font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.hub-card .big{font-family:var(--display);font-size:1.9rem;line-height:1.05}
+.hub-card a{font-weight:600;padding:6px 0}
+.consent{align-items:flex-start;font-weight:500;font-size:.92rem;line-height:1.45}
+.consent input{flex:none;margin-top:2px}
+#cookie-bar{position:fixed;left:16px;right:16px;bottom:16px;z-index:20;max-width:720px;margin:0 auto;background:#141a3c;color:#f6f3ee;border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:16px 20px;display:flex;gap:12px 20px;align-items:center;flex-wrap:wrap;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+#cookie-bar p{flex:1 1 320px;font-size:.92rem;line-height:1.45;max-width:none}
+#cookie-bar a{color:#ffcf7a}
+#cookie-bar button{background:#ffcf7a;border-color:#ffcf7a;color:#17163a}
+footer .wrap{display:flex;gap:8px 20px;flex-wrap:wrap;align-items:center}
+footer a{color:var(--muted);padding:8px 0}
 /* neighbor board */
 .post{padding:16px 0;border-bottom:1px solid var(--line);display:grid;gap:8px}
 .post .meta{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;font-size:.84rem;color:var(--muted)}
@@ -218,6 +244,7 @@ dialog#lightbox .row{justify-content:space-between;margin-top:10px}
       <a href="#wildlife">Wildlife</a>
       <a href="#board">Neighbor board</a>
       <a href="#rules">Rules</a>
+      <a href="#votes" id="nav-votes" hidden>Votes</a>
       <a href="#dues" id="nav-dues" hidden>Dues</a>
       <a href="#report">Report</a>
       <a href="#account" id="nav-account" class="pill-link">Sign in</a>
@@ -431,6 +458,7 @@ dialog#lightbox .row{justify-content:space-between;margin-top:10px}
       <h3 class="field wide">Post a message</h3>
       <div class="field"><label for="b-cat">Category</label><select id="b-cat"><option>General</option><option>Lake notes</option><option>Lost and found</option><option>For sale or free</option></select></div>
       <div class="field wide"><label for="b-body">Message</label><textarea id="b-body" maxlength="1000" required></textarea></div>
+      <label class="check field wide" for="b-aud" id="b-aud-wrap" hidden><input type="checkbox" id="b-aud"> Lakefront members only</label>
       <div class="field wide row"><button class="primary" type="submit" id="b-save">Post to the board</button><span class="msg" id="b-msg" role="status"></span></div>
     </form>
   </div>
@@ -463,6 +491,24 @@ dialog#lightbox .row{justify-content:space-between;margin-top:10px}
       </ul></div>
       <div class="practice"><h3>In an emergency</h3><p>Call 911 first for anyone in danger, or for water going over or through the dam. Use the form below afterward so the lake manager has a record.</p></div>
     </div>
+  </div>
+</section>
+
+<section class="block" id="votes" aria-labelledby="votes-h" hidden>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="votes-h">Association votes</h2>
+      <p>Lakefront members vote here on association business. Each lakefront property has one vote.</p>
+    </div>
+    <div id="poll-list" style="display:grid;gap:16px"></div>
+    <form class="panel grid" id="poll-form" hidden>
+      <h3 class="field wide">Call a vote</h3>
+      <div class="field wide"><label for="pl-title">Question</label><input type="text" id="pl-title" maxlength="140" required></div>
+      <div class="field wide"><label for="pl-details">Background, optional</label><textarea id="pl-details" maxlength="2000"></textarea></div>
+      <div class="field wide"><label for="pl-opts">Choices, one per line (two to six)</label><textarea id="pl-opts" required placeholder="Yes&#10;No"></textarea></div>
+      <div class="field"><label for="pl-close">Closes on, optional</label><input type="date" id="pl-close"></div>
+      <div class="field wide row"><button class="primary" type="submit" id="pl-save">Open the vote</button><span class="msg" id="pl-msg" role="status"></span></div>
+    </form>
   </div>
 </section>
 
@@ -523,20 +569,41 @@ dialog#lightbox .row{justify-content:space-between;margin-top:10px}
     </div>
   </div>
 </section>
+<section class="block" id="contact" aria-labelledby="contact-h">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 id="contact-h">Contact the lake manager</h2>
+      <p>A private line between you and the lake manager. Nobody else can read it.</p>
+    </div>
+    <p class="empty" id="msg-signin">Sign in to message the lake manager. Residents can <a href="#account">request an account</a>.</p>
+    <div class="panel" id="msg-box" hidden>
+      <h3 id="msg-h">Your messages</h3>
+      <div id="msg-thread"></div>
+      <form class="grid" id="msg-form">
+        <div class="field wide"><label for="m-body">New message</label><textarea id="m-body" maxlength="2000" required></textarea></div>
+        <div class="field wide row"><button class="primary" type="submit">Send to the lake manager</button></div>
+      </form>
+      <span class="msg" id="m-msg" role="status"></span>
+    </div>
+  </div>
+</section>
+
 <section class="block" id="account" aria-labelledby="acct-h">
   <div class="wrap">
     <div class="sec-head">
-      <h2 id="acct-h">Resident accounts</h2>
-      <p id="acct-intro">The catch log, photo gallery, neighbor board, problem reports, and dues are for people who live in Taylor Lake Estates. Sign in with the link we email you. No password needed.</p>
+      <h2 id="acct-h">Your account</h2>
+      <p id="acct-intro">Accounts are for people who live in Taylor Lake Estates. Every resident can use the catch log, photo gallery, neighbor board, and messages. Lakefront members also pay dues and vote here. Sign in with the link we email you. No password needed.</p>
     </div>
     <div class="panel" id="acct-in" hidden>
       <div class="row" style="justify-content:space-between"><p id="acct-who"></p><button type="button" id="signout">Sign out</button></div>
     </div>
+    <div class="hub" id="hub"></div>
     <div class="two" id="acct-out">
       <form class="panel" id="signin-form">
         <h3>Sign in</h3>
         <div class="field"><label for="si-email">Email address</label><input type="email" id="si-email" maxlength="254" required autocomplete="email" style="width:100%;background:var(--paper);border:1.5px solid var(--line);border-radius:5px;padding:9px 10px"></div>
         <div class="row"><button class="primary" type="submit" id="si-send">Email me a sign-in link</button></div>
+        <p class="small muted">Signing in means you accept the <a href="terms.html">Terms of Use</a> and <a href="privacy.html">Privacy Policy</a>.</p>
         <span class="msg" id="si-msg" role="status"></span>
       </form>
       <form class="panel" id="req-form">
@@ -546,6 +613,7 @@ dialog#lightbox .row{justify-content:space-between;margin-top:10px}
         <div class="field"><label for="rq-email">Email address</label><input type="email" id="rq-email" maxlength="254" required autocomplete="email" style="width:100%;background:var(--paper);border:1.5px solid var(--line);border-radius:5px;padding:9px 10px"></div>
         <div class="field"><label for="rq-addr">Street address in Taylor Lake Estates</label><input type="text" id="rq-addr" maxlength="120" required autocomplete="street-address"></div>
         <label class="check" for="rq-lake"><input type="checkbox" id="rq-lake"> My property is on the lake</label>
+        <label class="check consent" for="rq-consent"><input type="checkbox" id="rq-consent" required> <span>I am 18 or older, I agree to the <a href="terms.html">Terms of Use</a>, and I consent to Taylor Lake Estates collecting and storing my name, email address, and street address as described in the <a href="privacy.html">Privacy Policy</a>.</span></label>
         <div class="row"><button class="primary" type="submit" id="rq-send">Send request</button></div>
         <span class="msg" id="rq-msg" role="status"></span>
       </form>
@@ -561,9 +629,14 @@ dialog#lightbox .row{justify-content:space-between;margin-top:10px}
 </section>
 </main>
 
-<footer><div class="wrap">Taylor Lake Estates lake association. Maintained by the lake manager.</div></footer>
+<footer><div class="wrap"><span>Taylor Lake Estates lake association. Maintained by the lake manager.</span><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Use</a><a href="#" id="cookie-open">Cookies and storage</a></div></footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<div id="cookie-bar" role="region" aria-label="Cookies and storage notice" hidden>
+  <p>This site sets no advertising or tracking cookies. It keeps a small amount of data in your browser to keep you signed in, remember this notice, and cache the weather. <a href="privacy.html#storage">Read the details</a>.</p>
+  <button type="button" id="cookie-ok">OK</button>
+</div>
+
+<script src="assets/supabase.js"></script>
 <script>
 (function(){
 "use strict";
@@ -766,9 +839,10 @@ function paintMoon(){
 }
 
 /* ---------- data: Supabase ---------- */
+const POLICY_VERSION="2026-11-19-draft";
 const SB_URL="https://rfynqrfylvbqttqarkpl.supabase.co",SB_KEY="sb_publishable_nyTpfrasZU2ZNiacogHrtw_qiln7wfE";
 const sb=window.supabase&&window.supabase.createClient?window.supabase.createClient(SB_URL,SB_KEY):null;
-const S={me:null,profile:null,status:null,catches:[],reports:[],dues:[],duesCfg:null,people:{},requests:[],board:[],photos:[],urls:{},busy:{}};
+const S={me:null,profile:null,status:null,catches:[],reports:[],dues:[],duesCfg:null,people:{},requests:[],board:[],photos:[],urls:{},polls:[],votes:[],tallies:[],msgs:[],busy:{}};
 const COND={ok:"Open",warn:"Advisory",crit:"Closed"};
 const LINK_RE=/^https:\/\/buy\.stripe\.com\/[A-Za-z0-9_\/-]+$/;
 const isRes=()=>!!(S.profile&&S.profile.active);
@@ -944,7 +1018,7 @@ async function loadDues(){
   const [a,b]=await Promise.all([
     sb.from("dues_settings").select("amount_cents,due_text,payment_link,note").eq("id",1).maybeSingle(),
     sb.from("dues_payments").select("id,user_id,property_address,owner_name,dues_year,paid_at,created_at").limit(1000)]);
-  if(!a.error)S.duesCfg=a.data;if(!b.error)S.dues=b.data||[];renderDues();
+  if(!a.error)S.duesCfg=a.data;if(!b.error)S.dues=b.data||[];renderDues();renderHub();
 }
 async function togglePaid(r){
   if(S.busy.d)return;S.busy.d=true;
@@ -979,7 +1053,7 @@ $("#ds-form").addEventListener("submit",async ev=>{
 /* ---------- neighbor board ---------- */
 function ago(t){const s=(Date.now()-new Date(t))/1000;return s<90?"just now":s<3600?Math.round(s/60)+" min ago":s<86400?Math.round(s/3600)+" hr ago":s<7*86400?Math.round(s/86400)+" days ago":day(t);}
 function renderBoard(){
-  const res=isRes();$("#board-form").hidden=!res;
+  const res=isRes();$("#board-form").hidden=!res;$("#b-aud-wrap").hidden=!(isLake()||isMgr());
   const tops=S.board.filter(p=>!p.parent_id),bc=$("#bc-body"),bm=$("#bc-meta");
   if(!res){bc.textContent=S.me?"Your account is not active.":"Sign in to read what the neighbors are posting.";bm.textContent="";$("#bc-go").textContent=S.me?"Open":"Sign in";$("#bc-go").setAttribute("href",S.me?"#board":"#account");
     $("#board-list").replaceChildren(h("p",{class:"empty"},"Sign in to read the board."));return;}
@@ -992,22 +1066,22 @@ function renderBoard(){
   box.replaceChildren(...rows.slice(0,100).map(p=>{
     const reps=S.board.filter(r=>r.parent_id===p.id).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
     const inp=h("input",{type:"text",maxlength:"1000","aria-label":"Reply to this post",placeholder:"Write a reply"});
-    const form=h("form",{class:"reply-form",onsubmit:ev=>{ev.preventDefault();addPost(inp.value,p.category,p.id,inp);}},inp,h("button",{type:"submit"},"Reply"));
+    const form=h("form",{class:"reply-form",onsubmit:ev=>{ev.preventDefault();addPost(inp.value,p.category,p.id,inp,p.audience);}},inp,h("button",{type:"submit"},"Reply"));
     return h("div",{class:"post"},
-      h("div",{class:"meta"},h("span",{class:"tag ok"},p.category),h("strong",null,who(p.user_id)),h("span",null,ago(p.created_at)),canDel(p)?h("button",{class:"link",type:"button",onclick:()=>delPost(p)},"Remove"):null),
+      h("div",{class:"meta"},h("span",{class:"tag ok"},p.category),p.audience==="lakefront"?h("span",{class:"tag warn"},"Lakefront members only"):null,h("strong",null,who(p.user_id)),h("span",null,ago(p.created_at)),canDel(p)?h("button",{class:"link",type:"button",onclick:()=>delPost(p)},"Remove"):null),
       h("p",null,p.body),
       reps.length?h("div",{class:"replies"},...reps.map(r=>h("div",null,h("div",{class:"meta"},h("strong",null,who(r.user_id)),h("span",null,ago(r.created_at)),canDel(r)?h("button",{class:"link",type:"button",onclick:()=>delPost(r)},"Remove"):null),h("p",null,r.body)))):null,
       form);}));
 }
 async function loadBoard(){
   if(!isRes()){S.board=[];renderBoard();return;}
-  const {data,error}=await sb.from("board_posts").select("id,user_id,parent_id,category,body,created_at").order("created_at",{ascending:false}).limit(400);
+  const {data,error}=await sb.from("board_posts").select("id,user_id,parent_id,category,body,audience,created_at").order("created_at",{ascending:false}).limit(400);
   if(!error)S.board=data||[];renderBoard();
 }
-async function addPost(text,category,parent,inp){
+async function addPost(text,category,parent,inp,audience){
   const body=(text||"").trim().slice(0,1000);if(!body||!isRes()||S.busy.b)return;
   S.busy.b=true;if(!parent){$("#b-save").disabled=true;say("#b-msg","Posting…");}
-  const {error}=await sb.from("board_posts").insert({body,category,parent_id:parent||null});
+  const {error}=await sb.from("board_posts").insert({body,category,parent_id:parent||null,audience:audience==="lakefront"?"lakefront":"all"});
   S.busy.b=false;$("#b-save").disabled=false;
   if(error){fail("#b-msg",error);return;}
   if(inp)inp.value="";else{$("#b-body").value="";say("#b-msg","Posted.","good");}
@@ -1018,7 +1092,7 @@ async function delPost(p){
   if(error){fail("#b-msg",error);return;} loadBoard();
 }
 $("#board-filter").addEventListener("change",renderBoard);
-$("#board-form").addEventListener("submit",ev=>{ev.preventDefault();addPost($("#b-body").value,$("#b-cat").value,null,null);});
+$("#board-form").addEventListener("submit",ev=>{ev.preventDefault();addPost($("#b-body").value,$("#b-cat").value,null,null,$("#b-aud").checked?"lakefront":"all");});
 
 /* ---------- photo gallery ---------- */
 function renderGallery(){
@@ -1087,10 +1161,138 @@ setInterval(()=>{paintHero();},5*6e4);
 setInterval(()=>{paintMoon();loadWeather();},30*6e4);
 
 
+/* ---------- association votes (lakefront members and the manager) ---------- */
+function pollOpen(p){return !p.closed&&(!p.closes_at||new Date(p.closes_at)>new Date());}
+function renderVotes(){
+  const show=isLake()||isMgr();$("#votes").hidden=!show;$("#nav-votes").hidden=!show;if(!show)return;
+  $("#poll-form").hidden=!isMgr();
+  const box=$("#poll-list");
+  if(!S.polls.length){box.replaceChildren(h("p",{class:"empty"},isMgr()?"No votes yet. Create the first one below.":"No votes have been called yet."));return;}
+  box.replaceChildren(...S.polls.map(p=>{
+    const open=pollOpen(p),rows=S.votes.filter(v=>v.poll_id===p.id),mine=isMgr()?rows.find(v=>v.user_id===S.me.id):rows[0];
+    const tall=S.tallies.filter(t=>t.poll_id===p.id),total=tall.reduce((a,t)=>a+t.n,0),opts=Array.isArray(p.options)?p.options:[];
+    const card=h("div",{class:"panel"},
+      h("div",{class:"row",style:"justify-content:space-between"},h("h3",null,p.title),h("span",{class:"tag "+(open?"ok":"warn")},open?(p.closes_at?"Open until "+day(p.closes_at):"Open"):"Closed")),
+      p.details?h("p",{style:"white-space:pre-wrap"},p.details):null);
+    if(open&&isLake()&&!mine){
+      const name="poll-"+p.id,msg=h("span",{class:"msg",role:"status"});
+      const form=h("form",{class:"vote-form",onsubmit:ev=>{ev.preventDefault();const c=form.querySelector("input:checked");if(!c){msg.textContent="Choose one of the options.";msg.className="msg err";return;}castVote(p,Number(c.value),msg);}},
+        h("fieldset",null,h("legend",{class:"small muted"},"One vote per lakefront property. A vote cannot be changed once cast."),
+          ...opts.map((o,i)=>h("label",{class:"check",for:name+"-"+i},h("input",{type:"radio",name,id:name+"-"+i,value:i}),o))),
+        h("div",{class:"row"},h("button",{class:"primary",type:"submit"},"Cast vote"),msg));
+      card.append(form);
+    }else{
+      if(mine)card.append(h("p",{class:"small"},"Your household voted: ",h("strong",null,opts[mine.choice]||"")));
+      if(mine||!open||isMgr())card.append(h("div",{class:"bars"},...opts.map((o,i)=>{const n=(tall.find(t=>t.choice===i)||{n:0}).n,pc=total?Math.round(n/total*100):0;
+        return h("div",{class:"bar"},h("div",{class:"row",style:"justify-content:space-between"},h("span",null,o),h("span",{class:"num"},n+(n===1?" vote":" votes")+" · "+pc+"%")),h("div",{class:"track"},h("div",{class:"fill",style:"width:"+pc+"%"})));})));
+      else card.append(h("p",{class:"small muted"},"Results appear once your household has voted or the vote closes."));
+    }
+    if(isMgr()){
+      if(rows.length)card.append(h("details",null,h("summary",null,"How each property voted ("+rows.length+")"),h("ul",{class:"plain"},...rows.map(v=>h("li",null,who(v.user_id)+": "+(opts[v.choice]||""))))));
+      card.append(h("div",{class:"row"},open?h("button",{class:"link",type:"button",onclick:()=>closePoll(p)},"Close this vote"):null,h("button",{class:"link",type:"button",onclick:()=>deletePoll(p,card)},"Delete")));
+    }
+    return card;}));
+}
+async function loadVotes(){
+  if(!(isLake()||isMgr())){S.polls=[];S.votes=[];S.tallies=[];renderVotes();renderHub();return;}
+  const [a,b,c]=await Promise.all([
+    sb.from("polls").select("id,title,details,options,closes_at,closed,created_at").order("created_at",{ascending:false}).limit(100),
+    sb.from("votes").select("poll_id,user_id,choice").limit(5000),
+    sb.from("poll_tallies").select("poll_id,choice,n").limit(1000)]);
+  if(!a.error)S.polls=a.data||[];if(!b.error)S.votes=b.data||[];if(!c.error)S.tallies=c.data||[];
+  renderVotes();renderHub();
+}
+async function castVote(p,choice,msg){
+  if(S.busy.v)return;S.busy.v=true;msg.textContent="Recording your vote…";msg.className="msg";
+  const {error}=await sb.from("votes").insert({poll_id:p.id,choice});S.busy.v=false;
+  if(error){msg.className="msg err";msg.textContent=error.code==="23505"?"Your household has already voted on this.":error.code==="P0001"?error.message:"Your vote was not recorded. Check your connection and try again.";if(error.code==="23505")loadVotes();return;}
+  loadVotes();
+}
+async function closePoll(p){if(S.busy.v)return;S.busy.v=true;const {error}=await sb.from("polls").update({closed:true}).eq("id",p.id);S.busy.v=false;if(error){fail("#pl-msg",error);return;}loadVotes();}
+function deletePoll(p,card){                       /* two-step: no browser confirm dialogs */
+  const bar=h("div",{class:"row"},h("span",{class:"msg err"},"Delete this vote and every ballot cast? This cannot be undone."),
+    h("button",{type:"button",onclick:async()=>{const {error}=await sb.from("polls").delete().eq("id",p.id);if(error){fail("#pl-msg",error);return;}loadVotes();}},"Yes, delete"),
+    h("button",{type:"button",onclick:()=>bar.remove()},"Keep it"));
+  card.append(bar);
+}
+$("#poll-form").addEventListener("submit",async ev=>{
+  ev.preventDefault();if(!isMgr()||S.busy.v)return;
+  const title=$("#pl-title").value.trim().slice(0,140),options=$("#pl-opts").value.split("\n").map(x=>x.trim().slice(0,80)).filter(Boolean),dt=$("#pl-close").value;
+  if(!title){say("#pl-msg","Give the vote a title.","err");return;}
+  if(options.length<2||options.length>6){say("#pl-msg","List between two and six choices, one per line.","err");return;}
+  S.busy.v=true;$("#pl-save").disabled=true;say("#pl-msg","Saving…");
+  const {error}=await sb.from("polls").insert({title,details:$("#pl-details").value.trim().slice(0,2000),options,closes_at:dt?new Date(dt+"T23:59:00").toISOString():null});
+  S.busy.v=false;$("#pl-save").disabled=false;
+  if(error){fail("#pl-msg",error);return;}
+  $("#poll-form").reset();say("#pl-msg","The vote is open.","good");loadVotes();
+});
+
+/* ---------- messages with the lake manager ---------- */
+function bubble(m){const mine=m.sender_id===S.me.id;
+  return h("div",{class:"bubble"+(mine?" mine":"")},h("div",{class:"meta"},h("strong",null,mine?"You":(m.sender_id===m.member_id?who(m.sender_id):"Lake manager")),h("span",null,ago(m.created_at))),h("p",null,m.body));}
+function renderMsgs(){
+  const res=isRes();$("#msg-signin").hidden=res;$("#msg-box").hidden=!res;if(!res)return;
+  const box=$("#msg-thread");
+  if(isMgr()){
+    $("#msg-form").hidden=true;$("#msg-h").textContent="Member messages";
+    const ids=[...new Set(S.msgs.map(m=>m.member_id))].filter(id=>id!==S.me.id);
+    ids.sort((a,b)=>{const la=S.msgs.filter(m=>m.member_id===a).pop(),lb=S.msgs.filter(m=>m.member_id===b).pop();return new Date(lb.created_at)-new Date(la.created_at);});
+    if(!ids.length){box.replaceChildren(h("p",{class:"empty"},"No messages from members yet."));return;}
+    box.replaceChildren(...ids.map(id=>{const th=S.msgs.filter(m=>m.member_id===id),inp=h("input",{type:"text",maxlength:"2000","aria-label":"Reply to "+who(id),placeholder:"Write a reply"});
+      return h("div",{class:"thread"},h("h3",null,who(id)),...th.map(bubble),
+        h("form",{class:"reply-form",onsubmit:ev=>{ev.preventDefault();sendMsg(id,inp.value,inp);}},inp,h("button",{type:"submit"},"Reply")));}));
+    return;
+  }
+  $("#msg-form").hidden=false;$("#msg-h").textContent="Your messages";
+  const th=S.msgs.filter(m=>m.member_id===S.me.id);
+  box.replaceChildren(...(th.length?th.map(bubble):[h("p",{class:"empty"},"No messages yet. Questions about dues, the lake, or your account go here.")]));
+}
+async function loadMsgs(){
+  if(!isRes()){S.msgs=[];renderMsgs();renderHub();return;}
+  const {data,error}=await sb.from("admin_messages").select("id,member_id,sender_id,body,created_at").order("created_at",{ascending:true}).limit(1000);
+  if(!error)S.msgs=data||[];renderMsgs();renderHub();
+}
+async function sendMsg(member,text,inp){
+  const body=(text||"").trim().slice(0,2000);if(!body||!isRes()||S.busy.m)return;
+  S.busy.m=true;say("#m-msg","Sending…");
+  const {error}=await sb.from("admin_messages").insert({member_id:member,body});S.busy.m=false;
+  if(error){fail("#m-msg",error);return;}
+  if(inp)inp.value="";say("#m-msg",isMgr()?"Reply saved.":"Saved. The lake manager will see it here.","good");loadMsgs();
+}
+$("#msg-form").addEventListener("submit",ev=>{ev.preventDefault();sendMsg(S.me.id,$("#m-body").value,$("#m-body"));});
+
+/* ---------- account hub ---------- */
+function renderHub(){
+  const box=$("#hub");if(!box)return;
+  if(!isRes()){box.replaceChildren();return;}
+  const card=(label,big,sub,href,go)=>h("div",{class:"hub-card"},h("span",{class:"lab"},label),h("span",{class:"big"},big),h("span",{class:"small muted"},sub),h("a",{href},go));
+  const out=[];
+  if(isLake()){
+    const yr=new Date().getFullYear(),mine=S.dues.filter(d=>d.user_id===S.me.id&&d.dues_year===yr),paid=mine.some(d=>d.paid_at);
+    out.push(card("Dues "+yr,paid?"Paid":mine.length?"Awaiting payment":"Not started",(S.duesCfg&&S.duesCfg.due_text)?"Due "+S.duesCfg.due_text:"Lakefront dues","#dues",paid?"View dues":"Pay dues"));
+  }
+  if(isLake()||isMgr()){
+    const open=S.polls.filter(pollOpen),waiting=isLake()?open.filter(p=>!S.votes.some(v=>v.poll_id===p.id&&(!isMgr()||v.user_id===S.me.id))).length:0;
+    out.push(card("Association votes",String(open.length),isLake()?(waiting?waiting+" waiting for your household":"Nothing waiting for you"):"open now","#votes",isMgr()?"Manage votes":"Go to votes"));
+  }
+  const th=isMgr()?S.msgs:S.msgs.filter(m=>m.member_id===S.me.id),last=th[th.length-1];
+  out.push(card(isMgr()?"Member messages":"Lake manager",last?(last.sender_id===S.me.id?"Sent":"New reply"):"No messages",last?ago(last.created_at):"Ask a question any time","#contact","Open messages"));
+  out.push(h("div",{class:"hub-card"},h("span",{class:"lab"},"Share"),h("a",{href:"#fishing"},"Log a catch"),h("a",{href:"#gallery"},"Add a photo"),h("a",{href:"#board"},"Post to the board"),h("a",{href:"#report"},"Report a problem")));
+  box.replaceChildren(...out);
+}
+
+/* ---------- storage notice ---------- */
+(function(){
+  const bar=$("#cookie-bar");let ok=false;try{ok=localStorage.getItem("tle-notice")==="1";}catch(e){}
+  bar.hidden=ok;
+  $("#cookie-ok").addEventListener("click",()=>{try{localStorage.setItem("tle-notice","1");}catch(e){}bar.hidden=true;});
+  $("#cookie-open").addEventListener("click",ev=>{ev.preventDefault();bar.hidden=false;$("#cookie-ok").focus();});
+})();
+
 /* ---------- accounts ---------- */
 function renderAccount(){
   $("#acct-in").hidden=!S.me;$("#acct-out").hidden=!!S.me;
-  $("#nav-account").textContent=S.me?"Account":"Sign in";
+  $("#nav-account").textContent=S.me?"My account":"Sign in";renderHub();
   if(S.me)$("#acct-who").textContent="Signed in as "+((S.profile&&S.profile.display_name)||S.me.email||"a resident")+(isMgr()?" (lake manager)":isLake()?" (lakefront owner)":"")+".";
   $("#admin-people").hidden=!isMgr();if(!isMgr())return;
   const pend=S.requests.filter(r=>r.status==="pending");
@@ -1141,8 +1343,9 @@ $("#req-form").addEventListener("submit",async ev=>{
   ev.preventDefault();if(S.busy.rq)return;
   const full_name=$("#rq-name").value.trim().slice(0,80),email=$("#rq-email").value.trim().toLowerCase(),street_address=$("#rq-addr").value.trim().slice(0,120);
   if(!full_name||!email||!street_address){say("#rq-msg","Fill in your name, email, and address.","err");return;}
+  if(!$("#rq-consent").checked){say("#rq-msg","Tick the consent box to send your request.","err");return;}
   S.busy.rq=true;$("#rq-send").disabled=true;say("#rq-msg","Sending…");
-  const {error}=await sb.from("account_requests").insert({full_name,email,street_address,says_lakefront:$("#rq-lake").checked});
+    const {error}=await sb.from("account_requests").insert({full_name,email,street_address,says_lakefront:$("#rq-lake").checked,consent:true,policy_version:POLICY_VERSION});
   S.busy.rq=false;$("#rq-send").disabled=false;
   if(error&&error.code==="23505"){say("#rq-msg","A request for that email is already on file. Once it is approved you can sign in.","good");return;}
   if(error){say("#rq-msg",error.code==="23514"?"Check the email address and try again.":"That did not go through. Check your connection and try again.","err");return;}
@@ -1158,10 +1361,10 @@ async function applySession(session){
   if(uid){const {data}=await sb.from("profiles").select("id,display_name,is_manager,is_lakefront,active").eq("id",uid).maybeSingle();S.profile=data||null;}
   renderStatus();
   await loadPeople();
-  loadCatches();loadReports();loadDues();loadBoard();loadPhotos();
+  loadCatches();loadReports();loadDues();loadBoard();loadPhotos();loadVotes();loadMsgs();
 }
 if(!sb){
-  $("#st-updated").textContent="The latest readings can't be reached right now.";renderStatus();renderLog();renderReports();renderDues();renderBoard();renderGallery();
+  $("#st-updated").textContent="The latest readings can't be reached right now.";renderStatus();renderLog();renderReports();renderDues();renderBoard();renderGallery();renderVotes();renderMsgs();
   ["#si-send","#rq-send"].forEach(s=>$(s).disabled=true);say("#si-msg","Sign-in is unavailable right now. Reload the page to try again.","err");
 }else{
   loadStatus();
