@@ -242,7 +242,7 @@ footer a{color:var(--muted);padding:8px 0}
       <a href="#fishing">Fishing</a>
       <a href="#gallery">Gallery</a>
       <a href="#wildlife">Wildlife</a>
-      <a href="#board">Neighbor board</a>
+      <a href="board.html">Neighbor board</a>
       <a href="#rules">Rules</a>
       <a href="#votes" id="nav-votes" hidden>Votes</a>
       <a href="#dues" id="nav-dues" hidden>Dues</a>
@@ -274,7 +274,7 @@ footer a{color:var(--muted);padding:8px 0}
         <div class="week" id="moon-week"></div>
       </div>
       <div class="glass">
-        <div class="glass-head"><span class="lab">Neighbor board</span><a class="go" href="#board" id="bc-go">Open</a></div>
+        <div class="glass-head"><span class="lab">Neighbor board</span><a class="go" href="board.html" id="bc-go">Open</a></div>
         <div id="bc-body">Sign in to read what the neighbors are posting.</div>
         <div class="sub" id="bc-meta"></div>
       </div>
@@ -449,18 +449,9 @@ footer a{color:var(--muted);padding:8px 0}
   <div class="wrap">
     <div class="sec-head">
       <h2 id="board-h">Neighbor board</h2>
-      <p>Lake notes, lost and found, things for sale or free. Posts are visible to residents only.</p>
+      <p>The board has its own page: a feed of posts, photos, and video from around the lake, with likes and comments. You need to be signed in to use it.</p>
     </div>
-    <div class="row"><label for="board-filter" class="small">Show</label>
-      <select id="board-filter" style="width:auto"><option value="">Everything</option><option>General</option><option>Lake notes</option><option>Lost and found</option><option>For sale or free</option></select></div>
-    <div id="board-list"><p class="empty">Sign in to read the board.</p></div>
-    <form class="panel grid" id="board-form" hidden>
-      <h3 class="field wide">Post a message</h3>
-      <div class="field"><label for="b-cat">Category</label><select id="b-cat"><option>General</option><option>Lake notes</option><option>Lost and found</option><option>For sale or free</option></select></div>
-      <div class="field wide"><label for="b-body">Message</label><textarea id="b-body" maxlength="1000" required></textarea></div>
-      <label class="check field wide" for="b-aud" id="b-aud-wrap" hidden><input type="checkbox" id="b-aud"> Lakefront members only</label>
-      <div class="field wide row"><button class="primary" type="submit" id="b-save">Post to the board</button><span class="msg" id="b-msg" role="status"></span></div>
-    </form>
+    <div class="row"><a class="btn" href="board.html">Open the neighbor board</a></div>
   </div>
 </section>
 
@@ -1050,49 +1041,20 @@ $("#ds-form").addEventListener("submit",async ev=>{
   if(error){fail("#ds-msg",error);return;} say("#ds-msg","");$("#ds-form").hidden=true;loadDues();
 });
 
-/* ---------- neighbor board ---------- */
-function ago(t){const s=(Date.now()-new Date(t))/1000;return s<90?"just now":s<3600?Math.round(s/60)+" min ago":s<86400?Math.round(s/3600)+" hr ago":s<7*86400?Math.round(s/86400)+" days ago":day(t);}
+/* ---------- neighbor board (the feed lives on board.html; here, just the latest post) ---------- */
+function ago(t){const s=(Date.now()-new Date(t))/1000;return s<90?"just now":s<3600?Math.round(s/60)+" min ago":s<86400?Math.round(s/3600)+" hr ago":s<7*86400?(Math.round(s/86400)===1?"1 day ago":Math.round(s/86400)+" days ago"):day(t);}
 function renderBoard(){
-  const res=isRes();$("#board-form").hidden=!res;$("#b-aud-wrap").hidden=!(isLake()||isMgr());
-  const tops=S.board.filter(p=>!p.parent_id),bc=$("#bc-body"),bm=$("#bc-meta");
-  if(!res){bc.textContent=S.me?"Your account is not active.":"Sign in to read what the neighbors are posting.";bm.textContent="";$("#bc-go").textContent=S.me?"Open":"Sign in";$("#bc-go").setAttribute("href",S.me?"#board":"#account");
-    $("#board-list").replaceChildren(h("p",{class:"empty"},"Sign in to read the board."));return;}
-  $("#bc-go").textContent="Post";$("#bc-go").setAttribute("href","#board");
-  if(tops.length){const t=tops[0];bc.textContent=t.body.length>130?t.body.slice(0,127)+"…":t.body;bm.textContent=who(t.user_id)+" · "+ago(t.created_at)+" · "+t.category;}
+  const bc=$("#bc-body"),bm=$("#bc-meta"),go=$("#bc-go");
+  if(!isRes()){bc.textContent=S.me?"Your account is not active.":"Sign in to read what the neighbors are posting.";bm.textContent="";go.textContent=S.me?"Open":"Sign in";return;}
+  go.textContent="Open";const t=S.board[0];
+  if(t){bc.textContent=t.body.length>130?t.body.slice(0,127)+"\u2026":t.body;bm.textContent=who(t.user_id)+" \u00B7 "+ago(t.created_at);}
   else{bc.textContent="Nothing posted yet. Start the board.";bm.textContent="";}
-  const f=$("#board-filter").value,rows=f?tops.filter(p=>p.category===f):tops,box=$("#board-list");
-  if(!rows.length){box.replaceChildren(h("p",{class:"empty"},tops.length?"Nothing in that category yet.":"No posts yet. Be the first."));return;}
-  const canDel=p=>p.user_id===S.me.id||isMgr();
-  box.replaceChildren(...rows.slice(0,100).map(p=>{
-    const reps=S.board.filter(r=>r.parent_id===p.id).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
-    const inp=h("input",{type:"text",maxlength:"1000","aria-label":"Reply to this post",placeholder:"Write a reply"});
-    const form=h("form",{class:"reply-form",onsubmit:ev=>{ev.preventDefault();addPost(inp.value,p.category,p.id,inp,p.audience);}},inp,h("button",{type:"submit"},"Reply"));
-    return h("div",{class:"post"},
-      h("div",{class:"meta"},h("span",{class:"tag ok"},p.category),p.audience==="lakefront"?h("span",{class:"tag warn"},"Lakefront members only"):null,h("strong",null,who(p.user_id)),h("span",null,ago(p.created_at)),canDel(p)?h("button",{class:"link",type:"button",onclick:()=>delPost(p)},"Remove"):null),
-      h("p",null,p.body),
-      reps.length?h("div",{class:"replies"},...reps.map(r=>h("div",null,h("div",{class:"meta"},h("strong",null,who(r.user_id)),h("span",null,ago(r.created_at)),canDel(r)?h("button",{class:"link",type:"button",onclick:()=>delPost(r)},"Remove"):null),h("p",null,r.body)))):null,
-      form);}));
 }
 async function loadBoard(){
   if(!isRes()){S.board=[];renderBoard();return;}
-  const {data,error}=await sb.from("board_posts").select("id,user_id,parent_id,category,body,audience,created_at").order("created_at",{ascending:false}).limit(400);
+  const {data,error}=await sb.from("board_posts").select("id,user_id,body,created_at").is("parent_id",null).order("created_at",{ascending:false}).limit(1);
   if(!error)S.board=data||[];renderBoard();
 }
-async function addPost(text,category,parent,inp,audience){
-  const body=(text||"").trim().slice(0,1000);if(!body||!isRes()||S.busy.b)return;
-  S.busy.b=true;if(!parent){$("#b-save").disabled=true;say("#b-msg","Posting…");}
-  const {error}=await sb.from("board_posts").insert({body,category,parent_id:parent||null,audience:audience==="lakefront"?"lakefront":"all"});
-  S.busy.b=false;$("#b-save").disabled=false;
-  if(error){fail("#b-msg",error);return;}
-  if(inp)inp.value="";else{$("#b-body").value="";say("#b-msg","Posted.","good");}
-  loadBoard();
-}
-async function delPost(p){
-  if(S.busy.b)return;S.busy.b=true;const {error}=await sb.from("board_posts").delete().eq("id",p.id);S.busy.b=false;
-  if(error){fail("#b-msg",error);return;} loadBoard();
-}
-$("#board-filter").addEventListener("change",renderBoard);
-$("#board-form").addEventListener("submit",ev=>{ev.preventDefault();addPost($("#b-body").value,$("#b-cat").value,null,null,$("#b-aud").checked?"lakefront":"all");});
 
 /* ---------- photo gallery ---------- */
 function renderGallery(){
@@ -1277,7 +1239,7 @@ function renderHub(){
   }
   const th=isMgr()?S.msgs:S.msgs.filter(m=>m.member_id===S.me.id),last=th[th.length-1];
   out.push(card(isMgr()?"Member messages":"Lake manager",last?(last.sender_id===S.me.id?"Sent":"New reply"):"No messages",last?ago(last.created_at):"Ask a question any time","#contact","Open messages"));
-  out.push(h("div",{class:"hub-card"},h("span",{class:"lab"},"Share"),h("a",{href:"#fishing"},"Log a catch"),h("a",{href:"#gallery"},"Add a photo"),h("a",{href:"#board"},"Post to the board"),h("a",{href:"#report"},"Report a problem")));
+  out.push(h("div",{class:"hub-card"},h("span",{class:"lab"},"Share"),h("a",{href:"#fishing"},"Log a catch"),h("a",{href:"#gallery"},"Add a photo"),h("a",{href:"board.html"},"Post to the board"),h("a",{href:"#report"},"Report a problem")));
   box.replaceChildren(...out);
 }
 

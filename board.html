@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neighbor Board</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<style>
+/* Layout idea: one quiet column, like a feed. Same palette as the lake page: light by day, indigo after sunset. */
+:root{
+  --paper:#f4f1ea; --surface:#fffdf8; --ink:#17163a; --muted:#5b5975; --line:#dcd6c9;
+  --water:#2a5c8f; --buoy:#b84a17; --on-accent:#fff; --ok:#2c7a4c; --warn:#946407; --crit:#b3372b;
+  --display:"DM Serif Display",Georgia,"Times New Roman",serif;
+  --body:"DM Sans","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+:root[data-phase="dusk"],:root[data-phase="night"]{
+  --paper:#0f1230; --surface:#191d44; --ink:#f1eef7; --muted:#b5b2cf; --line:#2f3362;
+  --water:#9cc0ea; --buoy:#ffcf7a; --on-accent:#17163a; --ok:#6fd09a; --warn:#f0c463; --crit:#ff8f85; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5}
+h1,h2{font-family:var(--display);font-weight:400;line-height:1.05;margin:0;text-wrap:balance}
+h1{font-size:clamp(2rem,6vw,3rem)}
+h2{font-size:1.5rem}
+p{margin:0}
+a{color:var(--water)}
+:focus-visible{outline:3px solid var(--buoy);outline-offset:2px}
+[hidden]{display:none!important}
+.bar{background:#141a3c;color:#f6f3ee}
+.bar .in{max-width:720px;margin:0 auto;padding:16px 16px;display:flex;gap:10px 18px;align-items:center;flex-wrap:wrap}
+.bar a{color:#f6f3ee;text-decoration:none;font-weight:600;padding:8px 0}
+.bar .brand{letter-spacing:.2em;text-transform:uppercase;font-size:.85rem;margin-right:auto}
+.bar .who{font-size:.9rem;color:#d6d2e6}
+.col{max-width:720px;margin:0 auto;padding:28px 16px 80px;display:grid;gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:12px}
+.muted{color:var(--muted)}.small{font-size:.86rem}
+button,.btn{font:inherit;color:inherit;cursor:pointer;border-radius:999px;border:1.5px solid var(--ink);background:transparent;padding:9px 18px;font-weight:700;min-height:44px;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+button.primary{background:var(--buoy);border-color:var(--buoy);color:var(--on-accent)}
+button.ghost{border-color:var(--line);font-weight:600}
+button.link{border:0;padding:4px 6px;min-height:0;border-radius:4px;color:var(--water);text-decoration:underline;font-weight:600;font-size:.86rem}
+button:disabled{opacity:.5;cursor:not-allowed}
+input[type=text],input[type=email],select,textarea{font:inherit;color:inherit;width:100%;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;min-height:44px}
+textarea{min-height:92px;resize:vertical}
+label{font-weight:600;font-size:.9rem}
+.row{display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center}
+.msg{font-size:.92rem;font-weight:600}.msg.err{color:var(--crit)}.msg.good{color:var(--ok)}
+.check{display:flex;gap:8px;align-items:center;font-weight:600;font-size:.92rem}
+.check input{width:18px;height:18px;accent-color:var(--water)}
+.file{position:relative;overflow:hidden}
+.file input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+.picks{display:flex;gap:8px;flex-wrap:wrap}
+.pick{display:flex;align-items:center;gap:8px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:6px 6px 6px 10px;font-size:.86rem;max-width:100%}
+.pick span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters button{min-height:40px;padding:6px 14px;font-weight:600;border-color:var(--line)}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.head{display:flex;gap:12px;align-items:center}
+.ava{flex:none;width:44px;height:44px;border-radius:50%;background:var(--water);color:var(--paper);display:grid;place-items:center;font-weight:700;font-size:1.1rem}
+.head .name{font-weight:700}
+.head .meta{display:flex;gap:6px 10px;flex-wrap:wrap;font-size:.84rem;color:var(--muted);align-items:center}
+.tag{font-size:.74rem;font-weight:700;padding:2px 9px;border-radius:999px;border:1.5px solid currentColor}
+.tag.ok{color:var(--ok)}.tag.warn{color:var(--warn)}
+.body{white-space:pre-wrap;overflow-wrap:anywhere;font-size:1.05rem}
+.media{display:grid;gap:6px;border-radius:12px;overflow:hidden}
+.media.n2,.media.n3,.media.n4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.media.n3 .m:first-child{grid-column:1/-1}
+.media .m{display:block;padding:0;border:0;border-radius:0;min-height:0;background:var(--line);cursor:zoom-in;width:100%;aspect-ratio:4/3}
+.media.n1 .m{aspect-ratio:auto;max-height:560px}
+.media img{width:100%;height:100%;object-fit:cover;display:block}
+.media.n1 img{object-fit:contain;max-height:560px;background:#0b0d24}
+.media video{width:100%;max-height:560px;display:block;background:#0b0d24}
+.acts{display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line);padding-top:10px}
+.acts button{min-height:40px;padding:6px 14px;font-weight:600;border-color:var(--line)}
+.acts button[aria-pressed="true"]{background:var(--water);border-color:var(--water);color:var(--paper)}
+.comments{display:grid;gap:10px}
+.comment{background:var(--paper);border-radius:14px;padding:10px 14px;display:grid;gap:2px}
+.comment .meta{display:flex;gap:8px 10px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);align-items:center}
+.comment p{white-space:pre-wrap;overflow-wrap:anywhere}
+.cform{display:flex;gap:8px;flex-wrap:wrap}
+.cform input{flex:1 1 220px;width:auto}
+.empty{padding:22px;border:1.5px dashed var(--line);border-radius:16px;color:var(--muted)}
+dialog{border:0;border-radius:16px;padding:14px;background:var(--surface);color:var(--ink);max-width:min(94vw,1100px)}
+dialog::backdrop{background:rgba(5,6,26,.82)}
+dialog img{max-width:100%;max-height:78vh;display:block;border-radius:10px;margin:0 auto}
+footer{max-width:720px;margin:0 auto;padding:0 16px 48px;color:var(--muted);font-size:.88rem;display:flex;gap:8px 18px;flex-wrap:wrap}
+footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header class="bar"><div class="in">
+  <a class="brand" href="./">Taylor Lake Estates</a>
+  <span class="who" id="who"></span>
+  <a href="./">The lake</a>
+  <a href="./#account" id="acct-link">My account</a>
+  <button type="button" id="signout" class="ghost" style="border-color:rgba(255,255,255,.5);color:#f6f3ee" hidden>Sign out</button>
+</div></header>
+
+<main class="col">
+  <div>
+    <h1>Neighbor board</h1>
+    <p class="muted" style="margin-top:6px">News, questions, photos and video from around the lake. Residents only.</p>
+  </div>
+
+  <!-- signed out -->
+  <div class="card" id="gate" hidden>
+    <h2>Sign in to use the board</h2>
+    <p>The board is for people who live in Taylor Lake Estates. Enter your email and we will send you a sign-in link. No password needed.</p>
+    <form id="signin-form" style="display:grid;gap:10px">
+      <label for="si-email">Email address</label>
+      <input type="email" id="si-email" maxlength="254" required autocomplete="email">
+      <div class="row"><button class="primary" type="submit" id="si-send">Email me a sign-in link</button><a href="./#account">Request an account</a></div>
+      <span class="msg" id="si-msg" role="status"></span>
+      <p class="small muted">Signing in means you accept the <a href="terms.html">Terms of Use</a> and <a href="privacy.html">Privacy Policy</a>.</p>
+    </form>
+  </div>
+  <div class="card" id="inactive" hidden><h2>Your account is not active</h2><p>Contact the lake manager to have it turned back on.</p></div>
+  <p class="empty" id="loading">Opening the board…</p>
+
+  <!-- signed in -->
+  <div id="app" hidden style="display:grid;gap:18px">
+    <form class="card" id="composer">
+      <label for="c-body">Share something with the neighbors</label>
+      <textarea id="c-body" maxlength="1000" placeholder="What's happening at the lake?"></textarea>
+      <div class="picks" id="picks"></div>
+      <div class="row">
+        <span class="btn ghost file" style="border-color:var(--line)">Add photos<input type="file" id="c-photos" accept="image/jpeg,image/png,image/webp" multiple aria-label="Add photos"></span>
+        <span class="btn ghost file" style="border-color:var(--line)">Add a video<input type="file" id="c-video" accept="video/mp4,video/webm,video/quicktime" aria-label="Add a video"></span>
+        <label for="c-cat" class="small" style="margin-left:auto">Topic</label>
+        <select id="c-cat" style="width:auto"><option>General</option><option>Lake notes</option><option>Lost and found</option><option>For sale or free</option></select>
+      </div>
+      <label class="check" for="c-aud" id="c-aud-wrap" hidden><input type="checkbox" id="c-aud"> Lakefront members only</label>
+      <div class="row"><button class="primary" type="submit" id="c-post">Post</button><span class="msg" id="c-msg" role="status"></span></div>
+      <p class="small muted">Up to 4 photos, or 1 video up to 25 MB, per post. Three videos a week. Photos are resized and stripped of location data before upload. Videos upload as they are, so turn off location tagging in your camera if that matters to you.</p>
+    </form>
+
+    <div class="filters" id="filters" role="group" aria-label="Show topic"></div>
+    <div id="feed" style="display:grid;gap:18px"></div>
+    <div class="row" style="justify-content:center"><button type="button" class="ghost" id="more" hidden>Show older posts</button></div>
+  </div>
+</main>
+
+<dialog id="lightbox" aria-label="Photo"><img id="lb-img" alt=""><div class="row" style="justify-content:flex-end;margin-top:10px"><button type="button" id="lb-close">Close</button></div></dialog>
+
+<footer><span>Taylor Lake Estates lake association.</span><a href="privacy.html">Privacy Policy</a><a href="terms.html">Terms of Use</a></footer>
+
+<script src="assets/supabase.js"></script>
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+function h(tag,attrs,...kids){const e=document.createElement(tag);
+  for(const k in (attrs||{})){const v=attrs[k]; if(k==="class")e.className=v; else if(k.startsWith("on"))e.addEventListener(k.slice(2),v); else if(v!==false&&v!=null)e.setAttribute(k,v===true?"":v);}
+  for(const c of kids){if(c==null)continue; e.append(c.nodeType?c:document.createTextNode(String(c)));} return e;}
+const uidNew=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
+const say=(sel,t,c)=>{const e=$(sel);e.textContent=t;e.className="msg "+(c||"");};
+function ago(t){const s=(Date.now()-new Date(t))/1000;return s<90?"just now":s<3600?Math.round(s/60)+" min ago":s<86400?Math.round(s/3600)+" hr ago":s<7*86400?(Math.round(s/86400)===1?"1 day ago":Math.round(s/86400)+" days ago"):new Date(t).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});}
+
+/* palette follows the lake's day, as on the home page */
+(function(){
+  const LAT=38.729,LON=-89.883,now=new Date(),o={};
+  new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",hour12:false,year:"numeric",month:"numeric",day:"numeric",hour:"numeric",minute:"numeric"}).formatToParts(now).forEach(p=>o[p.type]=p.value);
+  const min=((+o.hour)%24)*60+(+o.minute),doy=Math.round((Date.UTC(+o.year,+o.month-1,+o.day)-Date.UTC(+o.year,0,0))/864e5),g=2*Math.PI/365*(doy-1),r=Math.PI/180;
+  const eq=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g));
+  const dec=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g)-0.002697*Math.cos(3*g)+0.00148*Math.sin(3*g);
+  const ha=Math.acos(Math.cos(90.833*r)/(Math.cos(LAT*r)*Math.cos(dec))-Math.tan(LAT*r)*Math.tan(dec))/r;
+  let off=min-(now.getUTCHours()*60+now.getUTCMinutes());if(off>720)off-=1440;if(off<-720)off+=1440;
+  const rise=720-4*(LON+ha)-eq+off,set=720-4*(LON-ha)-eq+off;
+  document.documentElement.setAttribute("data-phase",min<rise-40?"night":min<rise+40?"dawn":min<set-40?"day":min<set+50?"dusk":"night");
+})();
+
+const SB_URL="https://rfynqrfylvbqttqarkpl.supabase.co",SB_KEY="sb_publishable_nyTpfrasZU2ZNiacogHrtw_qiln7wfE";
+const sb=window.supabase&&window.supabase.createClient?window.supabase.createClient(SB_URL,SB_KEY):null;
+const MAX_PHOTOS=4,MAX_VIDEO=25*1024*1024,PAGE=20,TOPICS=["General","Lake notes","Lost and found","For sale or free"];
+const S={me:null,profile:null,people:{},posts:[],comments:[],media:[],likes:[],urls:{},picks:[],topic:"",more:false,busy:{}};
+const isRes=()=>!!(S.profile&&S.profile.active),isMgr=()=>isRes()&&!!S.profile.is_manager,isLake=()=>isRes()&&!!S.profile.is_lakefront;
+const who=id=>id===S.me.id?"You":(S.people[id]&&S.people[id].display_name)||"A neighbor";
+const errText=e=>!e?"":e.code==="P0001"?e.message:e.code==="42501"?"Your account does not have access to do that.":"That did not go through. Check your connection and try again.";
+
+/* ---------- composer ---------- */
+function renderPicks(){
+  $("#picks").replaceChildren(...S.picks.map((p,i)=>h("div",{class:"pick"},h("span",null,(p.kind==="video"?"Video: ":"Photo: ")+p.file.name),
+    h("button",{class:"link",type:"button","aria-label":"Remove "+p.file.name,onclick:()=>{S.picks.splice(i,1);renderPicks();}},"Remove"))));
+}
+$("#c-photos").addEventListener("change",ev=>{
+  const files=[...ev.target.files];ev.target.value="";
+  if(S.picks.some(p=>p.kind==="video")){say("#c-msg","A post can hold one video or up to four photos, not both.","err");return;}
+  for(const f of files){
+    if(!/^image\/(jpeg|png|webp)$/.test(f.type)){say("#c-msg",f.name+" is not a JPEG, PNG, or WebP photo.","err");continue;}
+    if(S.picks.length>=MAX_PHOTOS){say("#c-msg","A post can hold up to four photos.","err");break;}
+    S.picks.push({kind:"image",file:f});
+  }
+  renderPicks();
+});
+$("#c-video").addEventListener("change",ev=>{
+  const f=ev.target.files[0];ev.target.value="";if(!f)return;
+  if(S.picks.length){say("#c-msg","A post can hold one video or up to four photos, not both.","err");return;}
+  if(!/^video\/(mp4|webm|quicktime)$/.test(f.type)){say("#c-msg","That video format is not supported. Use MP4, MOV, or WebM.","err");return;}
+  if(f.size>MAX_VIDEO){say("#c-msg","That video is "+(f.size/1048576).toFixed(0)+" MB. The limit is 25 MB. Trim it or record at a lower quality.","err");return;}
+  S.picks.push({kind:"video",file:f});say("#c-msg","");renderPicks();
+});
+async function shrink(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url;});
+    const k=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement("canvas");
+    c.width=Math.max(1,Math.round(img.naturalWidth*k));c.height=Math.max(1,Math.round(img.naturalHeight*k));
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    return await new Promise(ok=>c.toBlob(ok,"image/jpeg",.85));
+  }finally{URL.revokeObjectURL(url);}
+}
+$("#composer").addEventListener("submit",async ev=>{
+  ev.preventDefault();if(!isRes()||S.busy.post)return;
+  const body=$("#c-body").value.trim().slice(0,1000),picks=S.picks.slice();
+  if(!body&&!picks.length){say("#c-msg","Write something or add a photo or video.","err");return;}
+  S.busy.post=true;$("#c-post").disabled=true;say("#c-msg",picks.length?"Uploading…":"Posting…");
+  let postId=null;const paths=[];
+  try{
+    const ins=await sb.from("board_posts").insert({body:body||(picks[0].kind==="video"?"Shared a video":"Shared a photo"),category:$("#c-cat").value,audience:$("#c-aud").checked?"lakefront":"all"}).select("id").single();
+    if(ins.error){say("#c-msg",errText(ins.error),"err");return;}
+    postId=ins.data.id;
+    for(let i=0;i<picks.length;i++){
+      const p=picks[i];say("#c-msg","Uploading "+(i+1)+" of "+picks.length+"…");
+      let blob=p.file,ext=p.kind==="video"?(p.file.type==="video/webm"?"webm":p.file.type==="video/quicktime"?"mov":"mp4"):"jpg",type=p.file.type;
+      if(p.kind==="image"){try{blob=await shrink(p.file);}catch(e){blob=null;}type="image/jpeg";if(!blob)throw {user:p.file.name+" could not be read as a photo."};}
+      const path=S.me.id+"/"+postId+"/"+uidNew()+"."+ext;
+      const up=await sb.storage.from("board").upload(path,blob,{contentType:type,upsert:false});
+      if(up.error)throw {user:p.kind==="video"?"The video did not upload. It may be over 25 MB or in a format the site does not accept.":"A photo did not upload. Check your connection and try again."};
+      paths.push(path);
+      const row=await sb.from("board_media").insert({post_id:postId,kind:p.kind,storage_path:path});
+      if(row.error)throw {user:errText(row.error)};
+    }
+    $("#c-body").value="";$("#c-aud").checked=false;S.picks=[];renderPicks();say("#c-msg","Posted.","good");
+    await loadFeed(true);
+  }catch(e){
+    if(paths.length)await sb.storage.from("board").remove(paths);
+    if(postId)await sb.from("board_posts").delete().eq("id",postId);
+    say("#c-msg",(e&&e.user)||"The post did not go through. Nothing was saved.","err");
+  }finally{S.busy.post=false;$("#c-post").disabled=false;}
+});
+
+/* ---------- feed ---------- */
+function renderFilters(){
+  $("#filters").replaceChildren(...[["","Everything"]].concat(TOPICS.map(t=>[t,t])).map(q=>
+    h("button",{type:"button","aria-pressed":String(S.topic===q[0]),onclick:()=>{S.topic=q[0];renderFilters();loadFeed(true);}},q[1])));
+}
+function mediaNode(p){
+  const ms=S.media.filter(m=>m.post_id===p.id);if(!ms.length)return null;
+  const box=h("div",{class:"media n"+ms.length});
+  for(const m of ms){const url=S.urls[m.storage_path];if(!url)continue;
+    if(m.kind==="video"){box.className="media";box.append(h("video",{src:url,controls:true,preload:"metadata",playsinline:true,"aria-label":"Video from "+who(p.user_id)}));}
+    else box.append(h("button",{class:"m",type:"button","aria-label":"Open photo from "+who(p.user_id),onclick:()=>{$("#lb-img").src=url;$("#lb-img").alt="Photo from "+who(p.user_id);const d=$("#lightbox");if(d.showModal)d.showModal();}},h("img",{src:url,alt:"Photo from "+who(p.user_id),loading:"lazy"})));}
+  return box;
+}
+function postNode(p){
+  const likes=S.likes.filter(l=>l.post_id===p.id),liked=likes.some(l=>l.user_id===S.me.id),cs=S.comments.filter(c=>c.parent_id===p.id);
+  const canDel=x=>x.user_id===S.me.id||isMgr(),name=who(p.user_id);
+  const inp=h("input",{type:"text",maxlength:"1000","aria-label":"Comment on this post",placeholder:"Write a comment"});
+  const card=h("article",{class:"card"},
+    h("div",{class:"head"},h("div",{class:"ava","aria-hidden":"true"},(name==="You"?(S.profile.display_name||"Y"):name).trim().charAt(0).toUpperCase()||"N"),
+      h("div",null,h("div",{class:"name"},name),h("div",{class:"meta"},h("span",null,ago(p.created_at)),p.category!=="General"?h("span",{class:"tag ok"},p.category):null,p.audience==="lakefront"?h("span",{class:"tag warn"},"Lakefront members only"):null))),
+    h("p",{class:"body"},p.body),mediaNode(p),
+    h("div",{class:"acts"},
+      h("button",{type:"button","aria-pressed":String(liked),onclick:()=>toggleLike(p,liked)},(liked?"Liked":"Like")+(likes.length?" · "+likes.length:"")),
+      h("span",{class:"small muted"},cs.length===1?"1 comment":cs.length+" comments"),
+      canDel(p)?h("button",{class:"link",type:"button",style:"margin-left:auto",onclick:()=>askDelete(p,card)},"Remove post"):null),
+    cs.length?h("div",{class:"comments"},...cs.map(c=>h("div",{class:"comment"},h("div",{class:"meta"},h("strong",null,who(c.user_id)),h("span",null,ago(c.created_at)),canDel(c)?h("button",{class:"link",type:"button",onclick:()=>delComment(c)},"Remove"):null),h("p",null,c.body)))):null,
+    h("form",{class:"cform",onsubmit:ev=>{ev.preventDefault();addComment(p,inp);}},inp,h("button",{type:"submit",class:"ghost"},"Comment")));
+  return card;
+}
+function renderFeed(){
+  const box=$("#feed");
+  if(!S.posts.length){box.replaceChildren(h("p",{class:"empty"},S.topic?"Nothing under that topic yet.":"No posts yet. Start the board with the form above."));$("#more").hidden=true;return;}
+  box.replaceChildren(...S.posts.map(postNode));$("#more").hidden=!S.more;
+}
+async function loadFeed(reset){
+  if(!isRes()||S.busy.feed)return;S.busy.feed=true;
+  try{
+    let q=sb.from("board_posts").select("id,user_id,category,body,audience,created_at").is("parent_id",null).order("created_at",{ascending:false}).limit(PAGE+1);
+    if(S.topic)q=q.eq("category",S.topic);
+    if(!reset&&S.posts.length)q=q.lt("created_at",S.posts[S.posts.length-1].created_at);
+    const {data,error}=await q;if(error){if(reset)$("#feed").replaceChildren(h("p",{class:"empty"},"The board can't be reached right now."));return;}
+    const page=(data||[]).slice(0,PAGE);S.more=(data||[]).length>PAGE;
+    S.posts=reset?page:S.posts.concat(page);
+    const ids=S.posts.map(p=>p.id);
+    if(ids.length){
+      const [c,m,l]=await Promise.all([
+        sb.from("board_posts").select("id,user_id,parent_id,body,created_at").in("parent_id",ids).order("created_at",{ascending:true}).limit(2000),
+        sb.from("board_media").select("id,post_id,kind,storage_path").in("post_id",ids).order("created_at",{ascending:true}).limit(1000),
+        sb.from("board_likes").select("post_id,user_id").in("post_id",ids).limit(5000)]);
+      S.comments=c.data||[];S.media=m.data||[];S.likes=l.data||[];
+      const need=S.media.map(x=>x.storage_path).filter(x=>!S.urls[x]);
+      if(need.length){const r=await sb.storage.from("board").createSignedUrls(need,3600);(r.data||[]).forEach(u=>{if(u&&u.signedUrl&&u.path)S.urls[u.path]=u.signedUrl;});}
+    }else{S.comments=[];S.media=[];S.likes=[];}
+    renderFeed();
+  }finally{S.busy.feed=false;}
+}
+$("#more").addEventListener("click",()=>loadFeed(false));
+async function toggleLike(p,liked){
+  if(S.busy.like)return;S.busy.like=true;
+  const r=liked?await sb.from("board_likes").delete().eq("post_id",p.id).eq("user_id",S.me.id):await sb.from("board_likes").insert({post_id:p.id});
+  S.busy.like=false;
+  if(!r.error||r.error.code==="23505"){S.likes=S.likes.filter(l=>!(l.post_id===p.id&&l.user_id===S.me.id));if(!liked)S.likes.push({post_id:p.id,user_id:S.me.id});renderFeed();}
+}
+async function addComment(p,inp){
+  const body=inp.value.trim().slice(0,1000);if(!body||S.busy.c)return;S.busy.c=true;
+  const {data,error}=await sb.from("board_posts").insert({body,category:p.category,audience:p.audience,parent_id:p.id}).select("id,user_id,parent_id,body,created_at").single();
+  S.busy.c=false;if(error){inp.setCustomValidity(errText(error));inp.reportValidity();inp.setCustomValidity("");return;}
+  inp.value="";S.comments.push(data);renderFeed();
+}
+async function delComment(c){const {error}=await sb.from("board_posts").delete().eq("id",c.id);if(!error){S.comments=S.comments.filter(x=>x.id!==c.id);renderFeed();}}
+function askDelete(p,card){
+  if(card.querySelector(".confirm"))return;
+  const bar=h("div",{class:"row confirm"},h("span",{class:"msg err"},"Remove this post, its comments, and its photos or video? This cannot be undone."),
+    h("button",{type:"button",onclick:async()=>{
+      const paths=S.media.filter(m=>m.post_id===p.id).map(m=>m.storage_path);
+      if(paths.length)await sb.storage.from("board").remove(paths);
+      const {error}=await sb.from("board_posts").delete().eq("id",p.id);
+      if(error){bar.replaceChildren(h("span",{class:"msg err"},errText(error)));return;}
+      S.posts=S.posts.filter(x=>x.id!==p.id);renderFeed();}},"Yes, remove"),
+    h("button",{type:"button",class:"ghost",onclick:()=>bar.remove()},"Keep it"));
+  card.append(bar);
+}
+$("#lb-close").addEventListener("click",()=>$("#lightbox").close());
+$("#lightbox").addEventListener("click",ev=>{if(ev.target===$("#lightbox"))$("#lightbox").close();});
+
+/* ---------- session ---------- */
+function show(which){["gate","inactive","loading","app"].forEach(id=>$("#"+id).hidden=id!==which);}
+async function applySession(session){
+  const uid=session&&session.user?session.user.id:null,prev=S.me?S.me.id:null;
+  S.me=uid?session.user:null;$("#signout").hidden=!uid;$("#acct-link").textContent=uid?"My account":"Request an account";
+  if(!uid){S.profile=null;$("#who").textContent="";show("gate");return;}
+  if(uid===prev&&S.profile)return;
+  const {data}=await sb.from("profiles").select("id,display_name,is_manager,is_lakefront,active").eq("id",uid).maybeSingle();
+  S.profile=data||null;$("#who").textContent=S.profile?(S.profile.display_name||""):"";
+  if(!isRes()){show("inactive");return;}
+  const pp=await sb.from("profiles").select("id,display_name").limit(2000);S.people={};(pp.data||[]).forEach(p=>S.people[p.id]=p);
+  $("#c-aud-wrap").hidden=!(isLake()||isMgr());renderFilters();show("app");loadFeed(true);
+}
+$("#signin-form").addEventListener("submit",async ev=>{
+  ev.preventDefault();if(S.busy.si||!sb)return;const email=$("#si-email").value.trim().toLowerCase();if(!email)return;
+  S.busy.si=true;$("#si-send").disabled=true;say("#si-msg","Sending…");
+  const {error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
+  S.busy.si=false;$("#si-send").disabled=false;
+  if(error)say("#si-msg",error.status===429?"Too many tries. Wait a minute and try again.":"We could not send a link to that address. If you have not been approved yet, request an account.","err");
+  else say("#si-msg","Check your email for the sign-in link.","good");
+});
+$("#signout").addEventListener("click",async()=>{await sb.auth.signOut();});
+if(!sb){show("gate");$("#si-send").disabled=true;say("#si-msg","Sign-in is unavailable right now. Reload the page to try again.","err");}
+else{
+  sb.auth.onAuthStateChange((ev,session)=>{setTimeout(()=>applySession(session),0);});
+  setInterval(()=>{if(document.visibilityState==="visible"&&isRes()&&!S.busy.post&&S.posts.length<=PAGE&&!document.activeElement.matches("input,textarea"))loadFeed(true);},60000);
+}
+})();
+</script>
+</body>
+</html>
